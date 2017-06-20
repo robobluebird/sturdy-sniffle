@@ -44,17 +44,6 @@ class NewChainController: UIViewController {
   }
   
   func okButtonTapped(gesture: UIGestureRecognizer) {
-    if chainText.text.characters.count > 0 && callback != nil {
-      createChain(text: chainText.text, completedCallback: { chain in
-        self.dismiss(animated: true, completion: {
-          self.callback!(chain)
-        })
-      }, failedCallback: {
-        self.dismiss(animated: true, completion: {
-          self.callback!(nil)
-        })
-      })
-    }
   }
   
   func cancelButtonTapped(gesture: UIGestureRecognizer) {

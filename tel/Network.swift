@@ -15,18 +15,21 @@ func constructUrl(_ tail: String) -> String {
   return "http://localhost:4567/\(tail)"
 }
 
-func createChain(text: String, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping () -> Void) {
-  post(constructUrl("chains"), params: ["chain": ["description": text]], completedCallback: { result in
-    let chain = Chain(json: result["chain"])!
-    
-    completedCallback(chain)
+func createChain(data: Data, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping () -> Void) {
+  formPost(constructUrl("chains"), data: data, completedCallback: { result in
+    if result["chain"] != nil {
+      completedCallback(Chain(json: result["chain"])!)
+    }
   }, failedCallback: {
     failedCallback()
   })
 }
 
-func postSound(data: Data, chainId: String, completedCallback: (Chain?) -> Void, failedCallback: @escaping () -> Void) {
-  formPost(constructUrl("chains/\(chainId)/sounds"), elements: [], data: data, completedCallback: { result in
+func createSound(data: Data, chainId: String, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping () -> Void) {
+  formPost(constructUrl("chains/\(chainId)/sounds"), data: data, completedCallback: { result in
+    if result["chain"] != nil {
+      completedCallback(Chain(json: result["chain"])!)
+    }
   }, failedCallback: {
     failedCallback()
   })
@@ -61,6 +64,48 @@ func fetchSounds(chainId: String, completedCallback: @escaping ([Sound]) -> Void
     }
   }, failedCallback: {
     failedCallback()
+  })
+}
+
+func reloadChain(chain: Chain, completedCallback: ((Chain) -> Void)?, failedCallback: (() -> Void)?) {
+  let url = "chains/\(chain.id)"
+  
+  get(constructUrl(url), completedCallback: { result in
+    if let reloadedChain = Chain(json: result["chain"]) {
+      completedCallback!(reloadedChain)
+    }
+  }, failedCallback: {
+    if failedCallback != nil {
+      failedCallback!()
+    }
+  })
+}
+
+func reloadChains(chains: [Chain], completedCallback: (([Chain]) -> Void)?, failedCallback: (() -> Void)?) {
+  var url = "chains"
+  
+  if chains.count > 0 {
+    url.append("?chain_ids[]=")
+  }
+  
+  let requestedIds = chains.map({ chain in chain.id }).joined(separator: "&chain_ids[]=")
+  
+  url.append(requestedIds)
+  
+  get(constructUrl(url), completedCallback: { result in
+    if let items = result["chains"].array {
+      var chains = [Chain]()
+      
+      for item in items {
+        chains.append(Chain(json: item)!)
+      }
+      
+      completedCallback!(chains)
+    }
+  }, failedCallback: {
+    if failedCallback != nil {
+      failedCallback!()
+    }
   })
 }
 
@@ -104,9 +149,6 @@ func get(_ url: String, headers: [String: String]? = nil, completedCallback: @es
 }
 
 func post(_ url: String, params: [String: NSDictionary]? = nil, headers: [String: String]? = nil, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping () -> Void) {
-  
-//  if let key = currentUser()?.apiKey {
-//    let headers = ["Authorization": "Token token=\(key)"]
   Alamofire.request(url, method: HTTPMethod.post, parameters: params, encoding: JSONEncoding.default, headers: headers).responseJSON { response in
     if let result = response.result.value {
       completedCallback(JSON(result))
@@ -114,20 +156,12 @@ func post(_ url: String, params: [String: NSDictionary]? = nil, headers: [String
       failedCallback()
     }
   }
-//  }
 }
 
-func formPost(_ url: String, elements: [String], data: Data, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping () -> Void) {
-//  if let key = currentUser()?.apiKey {
-//    let headers = ["Authorization": "Token token=\(key)"]
-    
+func formPost(_ url: String, data: Data, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping () -> Void) {
     Alamofire.upload(
       multipartFormData: { multipartFormData in
-        for (_, elem) in elements.enumerated() {
-          multipartFormData.append(elem.data(using: .utf8)!, withName: "chain_id")
-        }
-        
-        multipartFormData.append(data, withName: "sound[upload]", fileName: createFilename("m4a"), mimeType: "audio/m4a")
+        multipartFormData.append(data, withName: "upload", fileName: createFilename("m4a"), mimeType: "audio/m4a")
       },
       to: url,
       method: .post,
@@ -136,12 +170,13 @@ func formPost(_ url: String, elements: [String], data: Data, completedCallback: 
         switch encodingResult {
         case .success(let upload, _, _):
           upload.responseJSON { response in
-            completedCallback(JSON(response))
+            if let result = response.result.value {
+              completedCallback(JSON(result))
+            }
           }
         case .failure(_):
           failedCallback()
         }
       }
     )
-//  }
 }

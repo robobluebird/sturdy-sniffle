@@ -13,7 +13,6 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   @IBOutlet var outerRecordButton: UIView!
   @IBOutlet var innerRecordButton: UIView!
   @IBOutlet var meterBarsHolder: UIView!
-  @IBOutlet var clearButton: UIView!
   
   @IBOutlet var outerRecordButtonHeight: NSLayoutConstraint!
   @IBOutlet var outerRecordButtonWidth: NSLayoutConstraint!
@@ -26,9 +25,10 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   var chain: Chain?
   var recording = false
   var someCounter = 30
-  var callback: ((Data?, Chain?) -> Void)?
   var lpgr: UILongPressGestureRecognizer?
   var inactiveColor: UIColor?
+  var creationCallback: ((Data) -> Void)?
+  var additionCallback: ((Data, Chain) -> Void)?
   
   let barHolderHeight: CGFloat = 0.0
   var meterBarWidth: CGFloat = 0.0
@@ -48,6 +48,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   
   var goButton: UIView?
   var cancelButton: UIView?
+  var clearButton: UIView?
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -63,7 +64,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     innerRecordButton.layer.cornerRadius = buttonSize * 0.8 / 2
     
     // meter
-    meterBarHolderWidth = (view.bounds.width - view.layoutMargins.left * 4)
+    meterBarHolderWidth = UIScreen.main.bounds.width * 0.92
     meterBarWidth = meterBarHolderWidth / 150.0
     
     lpgr = UILongPressGestureRecognizer(target: self, action: #selector(RecordingController.handleLongPress(gestureReconizer:)))
@@ -95,21 +96,23 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     cancelButton = UIView(frame: CGRect(x: x * 5, y: y, width: actionSize, height: actionSize))
     let cancel = InterestingView(frame: CGRect(x: 0, y: 0, width: actionSize, height: actionSize), shape: Shape.delete)
     cancel.backgroundColor = UIColor.clear
-    cancelButton?.addSubview(cancel)
+    cancelButton!.addSubview(cancel)
     let cancelAction = UITapGestureRecognizer(target: self, action: #selector(RecordingController.cancelButtonTapped(gesture:)))
     cancelButton!.addGestureRecognizer(cancelAction)
     
     // clear button
-    let clear = InterestingView(frame: CGRect(x: 0, y: 0, width: actionSize / 2, height: actionSize / 2), shape: Shape.delete, color: UIColor.red)
+    clearButton = UIView(frame: CGRect(x: UIScreen.main.bounds.width / 2 - (actionSize / 4 / 2), y: (y * 0.25) - (actionSize / 4), width: actionSize / 4, height: actionSize / 4))
+    let clear = InterestingView(frame: CGRect(x: 0, y: 0, width: actionSize / 4, height: actionSize / 4), shape: Shape.delete, color: UIColor.red)
     clear.backgroundColor = UIColor.clear
-    clearButton.backgroundColor = UIColor.clear
-    clearButton.addSubview(clear)
+    clearButton!.backgroundColor = UIColor.clear
+    clearButton!.addSubview(clear)
     
     let clearAction = UITapGestureRecognizer(target: self, action: #selector(RecordingController.clearButtonTapped(gesture:)))
-    clearButton.addGestureRecognizer(clearAction)
+    clearButton!.addGestureRecognizer(clearAction)
     
     view.addSubview(goButton!)
     view.addSubview(cancelButton!)
+    view.addSubview(clearButton!)
   }
   
   func configureAudioSession() {
@@ -250,11 +253,8 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   
   func stopRecording() {
     innerRecordButton.backgroundColor = inactiveColor
-    
     recordedTime += recorder!.currentTime
-    
     recorder!.stop()
-    
     timer?.invalidate()
     
     do {
@@ -266,12 +266,36 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
         self.loadPlayer(data: data)
       }
     } catch {
-      print("DUMB: \(error)")
+      NSLog("DUMB: \(error)")
     }
     
     if recordedTime > recordTime {
       resetRecorder = true
     }
+  }
+  
+  func clearButtonTapped(gesture: UITapGestureRecognizer) {
+    player?.stop()
+    timer?.invalidate()
+    disableGoButton()
+    disableClearButton()
+    
+    recordedTime = 0.0
+    meterBarLeftOffset = 0.0
+    meterBarsHolder.subviews.forEach({ $0.removeFromSuperview() })
+    resetRecorder = false
+    
+    do {
+      try FileManager.default.removeItem(at: currentPath()!)
+      try FileManager.default.removeItem(at: exportPath()!)
+    } catch {
+      NSLog("\(error)")
+    }
+  }
+  
+  func cancelButtonTapped(gesture: UITapGestureRecognizer) {
+    clearButtonTapped(gesture: gesture)
+    self.dismiss(animated: true, completion: {})
   }
   
   func append() {
@@ -296,11 +320,11 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
       exportSession!.outputURL = exportPath()!
       exportSession!.outputFileType = AVFileTypeAppleM4A
       exportSession!.exportAsynchronously(completionHandler: {
-        print("DUMB: \(exportSession!.error)")
+        NSLog("DUMB: \(exportSession!.error)")
         self.doSomeThings()
       })
     } catch {
-      print("DUMB: \(error)")
+      NSLog("DUMB: \(error)")
     }
   }
   
@@ -312,7 +336,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
       let data = try Data(contentsOf: currentPath()!)
       self.loadPlayer(data: data)
     } catch {
-      print("DUMB: \(error)")
+      NSLog("DUMB: \(error)")
     }
   }
   
@@ -333,7 +357,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
         }
       }
     } catch {
-        print("DUMB: \(error)")
+      NSLog("DUMB: \(error)")
     }
   }
   
@@ -362,42 +386,31 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   }
   
   func enableClearButton() {
-    clearButton.isUserInteractionEnabled = true
-    clearButton.isHidden = false
+    clearButton!.isUserInteractionEnabled = true
+    clearButton!.isHidden = false
   }
   
   func disableClearButton() {
-    clearButton.isUserInteractionEnabled = false
-    clearButton.isHidden = true
+    clearButton!.isUserInteractionEnabled = false
+    clearButton!.isHidden = true
   }
   
   func goButtonTapped(gesture: UITapGestureRecognizer) {
-    // let data = self.player?.data
-  }
-  
-  func cancelButtonTapped(gesture: UITapGestureRecognizer) {
-    self.dismiss(animated: true, completion: {})
-  }
-  
-  func clearButtonTapped(gesture: UITapGestureRecognizer) {
-    player?.stop()
-    timer?.invalidate()
-    disableGoButton()
-    disableClearButton()
-    
-    recordedTime = 0.0
-    meterBarLeftOffset = 0.0
-    meterBarsHolder.subviews.forEach({ $0.removeFromSuperview() })
-    resetRecorder = false
-    
-    do {
-      try FileManager.default.removeItem(at: currentPath()!)
-      try FileManager.default.removeItem(at: exportPath()!)
-    } catch {
-      print("\(error)")
+    if player != nil {
+      if let data = self.player!.data {
+        self.dismiss(animated: true, completion: {
+          if self.chain != nil && self.additionCallback != nil {
+            self.additionCallback!(data, self.chain!)
+          } else if self.creationCallback != nil {
+            self.creationCallback!(data)
+          }
+        })
+      } else {
+        self.dismiss(animated: true, completion: nil)
+      }
     }
   }
-  
+
   func updatePlayer() {
     if player != nil {
       var frame = playhead.frame
@@ -409,8 +422,6 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   }
   
   func updateRecording() {
-    print("\(recordedTime) + \(recorder!.currentTime) = \(recordedTime + recorder!.currentTime)")
-    
     if recordedTime + recorder!.currentTime > recordTime {
       stopRecording()
     }

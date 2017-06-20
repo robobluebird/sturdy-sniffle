@@ -12,23 +12,29 @@ import SwiftyJSON
 class Chain: NSObject {
   var id: String
   var text: String
-  var url: String
+  var url: String?
   var duration: Float
+  var code: String
   var sounds = [Sound]()
   var soundsWithTimes = [SoundWithTime]()
+  var queuedBuildCount: Int
   
   override init() {
     id = ""
     text = ""
     url = ""
+    code = ""
     duration = 0.0
+    queuedBuildCount = 0
   }
   
   init?(json: JSON) {
     id = json["id"].string!
     text = json["description"].string ?? ""
     url = json["url"].string ?? ""
+    code = json["code"].string!
     duration = json["duration"].float ?? 0.0
+    queuedBuildCount = json["queued_build_count"].int ?? 0
     
     sounds = json["sounds"].array!.map { item in Sound(json: item)! }
     

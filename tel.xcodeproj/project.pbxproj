@@ -11,7 +11,6 @@
 		3509829A1DAC43AF00B3C016 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350982991DAC43AF00B3C016 /* Utilities.swift */; };
 		3509829C1DAC43D300B3C016 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3509829B1DAC43D300B3C016 /* Network.swift */; };
 		350B80FB1DB5DCC500D4CA46 /* RecordingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350B80FA1DB5DCC500D4CA46 /* RecordingController.swift */; };
-		350B80FD1DB5DE0300D4CA46 /* NewChainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350B80FC1DB5DE0300D4CA46 /* NewChainController.swift */; };
 		350DB41D1EC1FD07008802E7 /* Circle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350DB41C1EC1FD07008802E7 /* Circle.swift */; };
 		351579451EAFEA090098F4A7 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351579441EAFEA090098F4A7 /* Account.swift */; };
 		351579471EB13FEC0098F4A7 /* PlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351579461EB13FEC0098F4A7 /* PlayController.swift */; };
@@ -26,14 +25,13 @@
 		352892B91DAC3E84000E1E10 /* ChainCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892B81DAC3E84000E1E10 /* ChainCell.swift */; };
 		352892BB1DAC3E9A000E1E10 /* LoadingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892BA1DAC3E9A000E1E10 /* LoadingCell.swift */; };
 		352892BD1DAC3EB5000E1E10 /* SoundCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892BC1DAC3EB5000E1E10 /* SoundCell.swift */; };
-		352892BF1DAC3F06000E1E10 /* TelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892BE1DAC3F06000E1E10 /* TelController.swift */; };
 		352892C11DAC3F13000E1E10 /* RegistrationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892C01DAC3F13000E1E10 /* RegistrationController.swift */; };
-		352892C31DAC3F23000E1E10 /* SoundsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892C21DAC3F22000E1E10 /* SoundsController.swift */; };
 		352892C51DAC3F41000E1E10 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892C41DAC3F41000E1E10 /* User.swift */; };
 		352892C71DAC3F47000E1E10 /* Chain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892C61DAC3F47000E1E10 /* Chain.swift */; };
 		352892C91DAC3F50000E1E10 /* Sound.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892C81DAC3F50000E1E10 /* Sound.swift */; };
 		352892CB1DAC3F6A000E1E10 /* SoundWithTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892CA1DAC3F6A000E1E10 /* SoundWithTime.swift */; };
 		352892CD1DAC3F74000E1E10 /* Update.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892CC1DAC3F74000E1E10 /* Update.swift */; };
+		352B488A1ED45F780013F3CE /* UIFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352B48891ED45F780013F3CE /* UIFont.swift */; };
 		353477741DBE2B0B0051420F /* ValidatesTextProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353477731DBE2B0B0051420F /* ValidatesTextProtocol.swift */; };
 		353C7E891DD658F3002E50E7 /* InterestingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353C7E881DD658F3002E50E7 /* InterestingView.swift */; };
 		353C7E8B1DD67789002E50E7 /* ProgressBarSegementUITapGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353C7E8A1DD67789002E50E7 /* ProgressBarSegementUITapGestureRecognizer.swift */; };
@@ -71,7 +69,6 @@
 		350982991DAC43AF00B3C016 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		3509829B1DAC43D300B3C016 /* Network.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
 		350B80FA1DB5DCC500D4CA46 /* RecordingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordingController.swift; sourceTree = "<group>"; };
-		350B80FC1DB5DE0300D4CA46 /* NewChainController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewChainController.swift; sourceTree = "<group>"; };
 		350DB41C1EC1FD07008802E7 /* Circle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Circle.swift; sourceTree = "<group>"; };
 		351579441EAFEA090098F4A7 /* Account.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		351579461EB13FEC0098F4A7 /* PlayController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayController.swift; sourceTree = "<group>"; };
@@ -92,14 +89,13 @@
 		352892B81DAC3E84000E1E10 /* ChainCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChainCell.swift; sourceTree = "<group>"; };
 		352892BA1DAC3E9A000E1E10 /* LoadingCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoadingCell.swift; sourceTree = "<group>"; };
 		352892BC1DAC3EB5000E1E10 /* SoundCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SoundCell.swift; sourceTree = "<group>"; };
-		352892BE1DAC3F06000E1E10 /* TelController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TelController.swift; sourceTree = "<group>"; };
 		352892C01DAC3F13000E1E10 /* RegistrationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegistrationController.swift; sourceTree = "<group>"; };
-		352892C21DAC3F22000E1E10 /* SoundsController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SoundsController.swift; sourceTree = "<group>"; };
 		352892C41DAC3F41000E1E10 /* User.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		352892C61DAC3F47000E1E10 /* Chain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Chain.swift; sourceTree = "<group>"; };
 		352892C81DAC3F50000E1E10 /* Sound.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sound.swift; sourceTree = "<group>"; };
 		352892CA1DAC3F6A000E1E10 /* SoundWithTime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SoundWithTime.swift; sourceTree = "<group>"; };
 		352892CC1DAC3F74000E1E10 /* Update.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Update.swift; sourceTree = "<group>"; };
+		352B48891ED45F780013F3CE /* UIFont.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIFont.swift; sourceTree = "<group>"; };
 		353477731DBE2B0B0051420F /* ValidatesTextProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValidatesTextProtocol.swift; sourceTree = "<group>"; };
 		353C7E881DD658F3002E50E7 /* InterestingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InterestingView.swift; sourceTree = "<group>"; };
 		353C7E8A1DD67789002E50E7 /* ProgressBarSegementUITapGestureRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgressBarSegementUITapGestureRecognizer.swift; sourceTree = "<group>"; };
@@ -217,11 +213,8 @@
 		352892B61DAC3E50000E1E10 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				352892BE1DAC3F06000E1E10 /* TelController.swift */,
 				352892C01DAC3F13000E1E10 /* RegistrationController.swift */,
-				352892C21DAC3F22000E1E10 /* SoundsController.swift */,
 				350B80FA1DB5DCC500D4CA46 /* RecordingController.swift */,
-				350B80FC1DB5DE0300D4CA46 /* NewChainController.swift */,
 				351579461EB13FEC0098F4A7 /* PlayController.swift */,
 			);
 			name = Controllers;
@@ -269,6 +262,7 @@
 			children = (
 				3574D7BB1EB65429009C5111 /* UIBezierPath.swift */,
 				3574D7BD1EB6543E009C5111 /* CGFloat.swift */,
+				352B48891ED45F780013F3CE /* UIFont.swift */,
 			);
 			name = Extensions;
 			sourceTree = "<group>";
@@ -491,12 +485,11 @@
 				35903E061DF1030F0039502E /* UITapGestureWithCell.swift in Sources */,
 				352892B91DAC3E84000E1E10 /* ChainCell.swift in Sources */,
 				35272B281DAAA18C00F66736 /* tel.xcdatamodeld in Sources */,
-				350B80FD1DB5DE0300D4CA46 /* NewChainController.swift in Sources */,
 				3574D7B81EB63560009C5111 /* PlayButtonStateEnum.swift in Sources */,
 				352892C71DAC3F47000E1E10 /* Chain.swift in Sources */,
 				3567E57A1EBF732C0098618C /* ShapeEnum.swift in Sources */,
 				350DB41D1EC1FD07008802E7 /* Circle.swift in Sources */,
-				352892C31DAC3F23000E1E10 /* SoundsController.swift in Sources */,
+				352B488A1ED45F780013F3CE /* UIFont.swift in Sources */,
 				3574D7BE1EB6543E009C5111 /* CGFloat.swift in Sources */,
 				3500E2D21DC301130019247A /* NewChainDismissedProtocol.swift in Sources */,
 				353C7E8B1DD67789002E50E7 /* ProgressBarSegementUITapGestureRecognizer.swift in Sources */,
@@ -510,7 +503,6 @@
 				35DA4CF51DD7AC9A00694C6C /* UITapGestureRecognizerWithInt.swift in Sources */,
 				352892C51DAC3F41000E1E10 /* User.swift in Sources */,
 				351579471EB13FEC0098F4A7 /* PlayController.swift in Sources */,
-				352892BF1DAC3F06000E1E10 /* TelController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

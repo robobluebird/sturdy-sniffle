@@ -35,7 +35,7 @@ func save() -> Bool {
 func showAlert(context: UIViewController, title: String = "Error", message: String) {
   let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
   
-  let OKAction = UIAlertAction(title: "Cool", style: .default)
+  let OKAction = UIAlertAction(title: "cool", style: .default)
   
   alertController.addAction(OKAction)
   
@@ -62,8 +62,12 @@ func currentUser() -> User? {
   }
 }
 
-func hexStringToUIColor(_ hex: String) -> UIColor {
-  var cString:String = hex.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).uppercased()
+func hexStringToUIColor(_ hex: String?) -> UIColor? {
+  if hex == nil {
+    return nil
+  }
+  
+  var cString:String = hex!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).uppercased()
   
   if (cString.hasPrefix("#")) {
     cString = cString.substring(from: cString.characters.index(cString.startIndex, offsetBy: 1))

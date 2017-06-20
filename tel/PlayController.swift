@@ -10,14 +10,8 @@ import UIKit
 import AVFoundation
 import Alamofire
 
-class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecognizerDelegate {
-  @IBOutlet var progressHolder: UIView!
+class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate {
   @IBOutlet var piesHolder: UIView!
-  
-  @IBOutlet var progressHolderWidth: NSLayoutConstraint!
-  @IBOutlet var progressHolderHeight: NSLayoutConstraint!
-  @IBOutlet var playButtonWidth: NSLayoutConstraint!
-  @IBOutlet var playButtonHeight: NSLayoutConstraint!
   @IBOutlet var piesHolderHeight: NSLayoutConstraint!
   
   var progress = CAShapeLayer()
@@ -29,7 +23,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var timer: Timer?
   var playingRate = 0.0
   var audio: AVAudioPlayer?
-  var currentChain: Chain?
   var soundPoints: [Float] = []
   var pies: [Pie] = []
   var currentPieIndex = 0
@@ -37,7 +30,18 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var record = UIView()
   var playButton = UIView()
   var playButtonGraphic = UIView()
+  var loadingScreen = UIView()
+  var backdrop = UIView()
+  var reloadButton = UIView()
+  var randomizeButton = UIView()
+  var downloadButton = UIView()
+  var linkButton = UIView()
+  var nothingHereLabel = UILabel()
+  var workingLabel = UILabel()
+  var textField = UITextField()
   let progressSize = CGFloat(8.0)
+  let totalWidth = UIScreen.main.bounds.width
+  let totalHeight = UIScreen.main.bounds.height
   let screenCenterX = UIScreen.main.bounds.width / 2
   let screenCenterY = UIScreen.main.bounds.height / 2
   let pieSize = UIScreen.main.bounds.width / 2
@@ -46,9 +50,118 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   override func viewDidLoad() {
     super.viewDidLoad()
     
-    let origin = CGPoint(x: UIScreen.main.bounds.width / 2 - (pieSize * 0.8) / 2, y: UIScreen.main.bounds.height / 2 - (pieSize * 0.8) / 2)
+    let coveringSize = pieSize + (pieSize / 8)
+    
+    //nothing
+    let nothingOrigin = CGPoint(x: 0, y: (totalHeight / 2) - (pieSize / 4))
+    let nothingSize = CGSize(width: totalWidth, height: pieSize / 2)
+    nothingHereLabel = UILabel(frame: CGRect(origin: nothingOrigin, size: nothingSize))
+    nothingHereLabel.numberOfLines = 0
+    nothingHereLabel.text = "NOTHING HERE YET"
+    nothingHereLabel.font = nothingHereLabel.font.withSize(50).italic()
+    nothingHereLabel.adjustsFontSizeToFitWidth = true
+    nothingHereLabel.textAlignment = .center
+    nothingHereLabel.isHidden = true
+    view.addSubview(nothingHereLabel)
+    
+    // backdrop
+    let backdropOrigin = CGPoint(x: -totalWidth, y: (totalHeight / 2) - (pieSize / 2))
+    let backdropSize = CGSize(width: totalWidth, height: coveringSize)
+    
+    backdrop = UIView(frame: CGRect(origin: backdropOrigin, size: backdropSize))
+    backdrop.backgroundColor = .black
+    
+    let backdropTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleBackdropTap(gestureRecognizer:)))
+    backdrop.addGestureRecognizer(backdropTap)
+    
+    textField = UITextField(frame: CGRect(x: totalWidth * 0.1, y: (coveringSize / 2) - (pieSize / 4), width: totalWidth * 0.8, height: pieSize / 2))
+    textField.placeholder = "CODE"
+    textField.font = UIFont.systemFont(ofSize: 50).italic()
+    textField.textColor = .white
+    textField.borderStyle = .none
+    textField.autocorrectionType = .no
+    textField.autocapitalizationType = .allCharacters
+    textField.keyboardType = .default
+    textField.returnKeyType = .done
+    textField.clearButtonMode = .whileEditing;
+    textField.contentVerticalAlignment = .center
+    textField.contentHorizontalAlignment = .center
+    textField.tintColor = .white
+    textField.delegate = self
+    
+    backdrop.addSubview(textField)
+    view.addSubview(backdrop)
+    
+    // loading
+    let loadingOrigin = CGPoint(x: -totalWidth, y: (totalHeight / 2) - (pieSize / 2))
+    let loadingSize = CGSize(width: totalWidth, height: coveringSize)
+    loadingScreen = UIView(frame: CGRect(origin: loadingOrigin, size: loadingSize))
+    loadingScreen.backgroundColor = .blue
+    let loadingLabel = UILabel(frame: CGRect(origin: CGPoint(x: 0, y: 0), size: loadingSize))
+    loadingLabel.textColor = .white
+    loadingLabel.text = "THINKING"
+    loadingLabel.font = loadingLabel.font.withSize(50).italic()
+    loadingLabel.adjustsFontSizeToFitWidth = true
+    loadingLabel.textAlignment = .center
+    loadingScreen.addSubview(loadingLabel)
+    view.addSubview(loadingScreen)
+    
+    let origin = CGPoint(x: totalWidth / 2 - (pieSize * 0.8) / 2, y: totalHeight / 2 - (pieSize * 0.8) / 2)
     let size = CGSize(width: pieSize * 0.8, height: pieSize * 0.8)
     playButton = Circle(frame: CGRect(origin: origin, size: size))
+    
+    // reload button
+    reloadButton = UIView(frame: CGRect(origin: CGPoint(x: screenCenterX - (pieSize / 8), y: totalHeight * 0.20), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    let reloadLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
+    reloadLabel.text = "↺"
+    reloadLabel.adjustsFontSizeToFitWidth = true
+    reloadLabel.font = reloadLabel.font.withSize(50).italic()
+    reloadButton.addSubview(reloadLabel)
+    let reloadTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleReloadTap(gestureRecognizer:)))
+    reloadButton.addGestureRecognizer(reloadTap)
+    view.addSubview(reloadButton)
+    
+    // randomize button
+    randomizeButton = UIView(frame: CGRect(origin: CGPoint(x: (screenCenterX * 1.50) - (pieSize / 8), y: totalHeight * 0.20 - 2.5), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    let randomizeLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
+    randomizeLabel.text = "⚄"
+    randomizeLabel.adjustsFontSizeToFitWidth = true
+    randomizeLabel.font = randomizeLabel.font.withSize(50).italic()
+    randomizeButton.addSubview(randomizeLabel)
+    let randomizeTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleRandomizeTap(gestureRecognizer:)))
+    randomizeButton.addGestureRecognizer(randomizeTap)
+    view.addSubview(randomizeButton)
+    
+    // download button
+    downloadButton = UIView(frame: CGRect(origin: CGPoint(x: (screenCenterX * 1.50) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    let downloadLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
+    downloadLabel.text = "↓"
+    downloadLabel.adjustsFontSizeToFitWidth = true
+    downloadLabel.font = downloadLabel.font.withSize(50).italic()
+    downloadButton.addSubview(downloadLabel)
+    let downloadTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleDownloadTap(gestureRecognizer:)))
+    downloadButton.addGestureRecognizer(downloadTap)
+    view.addSubview(downloadButton)
+    
+    // link button
+    linkButton = UIView(frame: CGRect(origin: CGPoint(x: (screenCenterX * 0.5) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    let linkLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
+    linkLabel.text = "☍"
+    linkLabel.adjustsFontSizeToFitWidth = true
+    linkLabel.font = linkLabel.font.withSize(50).italic()
+    linkButton.addSubview(linkLabel)
+    let linkTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleLinkTap(gestureRecognizer:)))
+    linkButton.addGestureRecognizer(linkTap)
+    view.addSubview(linkButton)
+    
+    // workingLabel
+    let top = screenCenterY + (pieSize / 2)
+    workingLabel = UILabel(frame: CGRect(x: 0, y: top, width: totalWidth, height: pieSize / 8))
+    workingLabel.numberOfLines = 0
+    workingLabel.textAlignment = .center
+    workingLabel.font = workingLabel.font.italic()
+    workingLabel.isHidden = true
+    view.addSubview(workingLabel)
     
     // make the play button
     let triangle = InterestingView(frame: CGRect(x: 0, y: 0, width: 30, height: 30), shape: Shape.play)
@@ -78,25 +191,13 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     // actions
     setActions()
     disableControls()
-    
-    // pie holder
-    piesHolderHeight.constant = pieSize
-    lsg = UISwipeGestureRecognizer(target: self, action: #selector(PlayController.handleSwipe(gestureRecognizer:)))
-    rsg = UISwipeGestureRecognizer(target: self, action: #selector(PlayController.handleSwipe(gestureRecognizer:)))
-    lsg!.direction = .left
-    rsg!.direction = .right
-    piesHolder.addGestureRecognizer(lsg!)
-    piesHolder.addGestureRecognizer(rsg!)
+    configurePieHolder()
     
     // get chains
     fetchChains(nil, completedCallback: { chains, amount in
-      if chains.count > 0 {
-        self.createPies(chains: chains)
-      } else {
-        showAlert(context: self, message: "there's nothing to show :(")
-      }
+      self.createPies(chains: chains, callback: nil)
     }, failedCallback: {
-      showAlert(context: self, message: "delete your account >:(")
+      showAlert(context: self, message: "failed to contact the server")
     });
   }
   
@@ -104,10 +205,56 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     super.didReceiveMemoryWarning()
   }
   
+  func showBackdrop(_ showCompleted: (() -> Void)? = nil) {
+    view.bringSubview(toFront: backdrop)
+    
+    UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseInOut, animations: {
+      self.backdrop.frame.origin.x = 0
+    }, completion: { completed in
+      if showCompleted != nil {
+        showCompleted!()
+      }
+    })
+  }
+  
+  func hideBackdrop(_ hideCompleted: (() -> Void)? = nil) {
+    UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseInOut, animations: {
+      self.backdrop.frame.origin.x = self.backdrop.frame.origin.x - self.totalWidth
+    }, completion: { completed in
+      self.textField.resignFirstResponder();
+      
+      if hideCompleted != nil {
+        hideCompleted!()
+      }
+    })
+  }
+  
+  func showLoading(_ showCompleted: (() -> Void)? = nil) {
+    view.bringSubview(toFront: loadingScreen)
+    
+    UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseInOut, animations: {
+      self.loadingScreen.frame.origin.x = 0
+    }, completion: { completed in
+      if showCompleted != nil {
+        showCompleted!()
+      }
+    })
+  }
+  
+  func hideLoading(_ hideCompleted: (() -> Void)? = nil) {
+    UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseInOut, animations: {
+      self.loadingScreen.frame.origin.x = self.loadingScreen.frame.origin.x - self.totalWidth
+    }, completion: { completed in
+      if hideCompleted != nil {
+        hideCompleted!()
+      }
+    })
+  }
+  
   func setActions() {
     let actionSize = pieSize / 4
-    let x = (UIScreen.main.bounds.width / 2) - (actionSize / 2)
-    let y = UIScreen.main.bounds.height * 0.75
+    let x = (totalWidth / 2) - (actionSize / 2)
+    let y = totalHeight * 0.75
     
     // make the record button
     record = UIView(frame: CGRect(x: x, y: y, width: actionSize, height: actionSize))
@@ -123,25 +270,68 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func setNavigationItems() {
-    let rect = CGRect(x: 0, y: 0, width: pieSize / 6, height: pieSize / 6)
-    let button = UIButton(frame: rect)
+    let link = UIButton(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
+    let linkLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
+    linkLabel.text = "☍"
+    link.addSubview(linkLabel)
+    link.addTarget(self, action: #selector(PlayController.openLink(sender:)), for: .touchUpInside)
+    
+    let button = UIButton(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
     button.backgroundColor = UIColor.red
-    button.layer.cornerRadius = pieSize / 12
+    button.layer.cornerRadius = 10
     button.addTarget(self, action: #selector(PlayController.toNewRecording(sender:)), for: .touchUpInside)
     
     let recordIt = UIBarButtonItem(customView: button)
+    let linkIt = UIBarButtonItem(customView: link)
     
     self.navigationItem.rightBarButtonItem = recordIt
+    self.navigationItem.leftBarButtonItem = linkIt
+  }
+  
+  func configurePieHolder() {
+    piesHolderHeight.constant = pieSize
+    
+    // for some reason we require left and right swipe definitions? 🤔
+    lsg = UISwipeGestureRecognizer(target: self, action: #selector(PlayController.handleSwipe(gestureRecognizer:)))
+    rsg = UISwipeGestureRecognizer(target: self, action: #selector(PlayController.handleSwipe(gestureRecognizer:)))
+    
+    lsg!.direction = .left
+    rsg!.direction = .right
+    
+    piesHolder.addGestureRecognizer(lsg!)
+    piesHolder.addGestureRecognizer(rsg!)
   }
   
   func toNewRecording(sender: AnyObject) {
     let recorder: RecordingController = self.storyboard?.instantiateViewController(withIdentifier: "RecordingController") as! RecordingController
     
+    recorder.creationCallback = { data in
+      self.showLoading({
+        createChain(data: data, completedCallback: { chain in
+          var chains = self.chains()
+          
+          chains.insert(chain, at: self.currentPieIndex)
+          
+          self.createPies(chains: chains, callback: {
+            self.hideLoading()
+          })
+        }, failedCallback: {})
+      })
+    }
+    
     self.navigationController!.present(recorder, animated: true, completion: {})
   }
   
-  func createPies(chains: [Chain]) {
-    var offset = (x: piesHolder.center.x - (pieSize / 2), y: CGFloat(0.0))
+  func chains() -> [Chain] {
+    return pies.map({ pie in pie.chain! })
+  }
+  
+  func createPies(chains: [Chain], callback: (() -> Void)?) {
+    var offset = (x: piesHolder.center.x - (pieSize / 2) - (CGFloat(currentPieIndex) * (piesHolder.bounds.width / 2)
+      ), y: CGFloat(0.0))
+    
+    piesHolder.subviews.forEach({ $0.removeFromSuperview() })
+    pies.removeAll()
     
     for c in chains {
       let p = Pie(chain: c, origin: offset, size: pieSize)
@@ -154,16 +344,50 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       offset = (x: newX, y: newY)
     }
     
-    renderPies()
-    loadChain()
+    renderPies({
+      self.loadChain({
+        if callback != nil {
+          callback!()
+        }
+      })
+    })
   }
   
-  func renderPies() {
+  func renderPies(_ callback: (() -> Void)?) {
+    if pies.count == 0 {
+      nothingHereLabel.isHidden = false
+      view.bringSubview(toFront: nothingHereLabel)
+    } else {
+      nothingHereLabel.isHidden = true
+    }
+    
     for p in pies {
       piesHolder.addSubview(p)
     }
     
-    view.bringSubview(toFront: playButton)
+    if callback != nil {
+      callback!()
+    }
+  }
+  
+  func enablePieForChain(chain: Chain) {
+    if let pie = pieForChain(chain: chain) {
+      pie.enable()
+    }
+  }
+  
+  func disablePieForChain(chain: Chain) {
+    if let pie = pieForChain(chain: chain) {
+      pie.disable()
+    }
+  }
+  
+  func pieForChain(chain: Chain) -> Pie? {
+    if let index = pies.index(where: { pie in return pie.chain != nil && pie.chain!.id == chain.id }) {
+      return pies[index]
+    } else {
+      return nil
+    }
   }
   
   func progressPie() -> CAShapeLayer {
@@ -205,8 +429,10 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+    timer!.invalidate()
+    playing = false
     setPlayButtonState(to: .stopped)
-    timer?.invalidate()
+    setPlayProgress()
   }
   
   func setPlayButtonState(to state: PlayButtonState) {
@@ -230,25 +456,60 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func unloadChain() {
+    stopPlaying()
     disableControls()
     pies[currentPieIndex].removeGestureRecognizer(pieTap!)
   }
   
-  func loadChain() {
+  func loadChain(_ callback: (() -> Void)? = nil) {
+    var enabledControls = false
+    
     if pies.count - 1 < currentPieIndex {
+      enableReloadButton()
       return
     }
     
     if let chain = pies[currentPieIndex].chain {
-      initAudio(chain.url, callback: {
-        self.pies[self.currentPieIndex].addGestureRecognizer(self.pieTap!)
-        self.setPlayProgress()
-        self.enableControls()
-      })
+      if chain.url == nil || chain.url! == "" {
+        self.disableControls()
+        self.pies[self.currentPieIndex].disable()
+      } else {
+        let url = "https://s3.us-east-2.amazonaws.com/tel-serv/" + chain.url!
+        
+        initAudio(url, callback: {
+          self.pies[self.currentPieIndex].addGestureRecognizer(self.pieTap!)
+          self.pies[self.currentPieIndex].enable()
+          self.setPlayProgress()
+          self.enableControls()
+          
+          enabledControls = true
+        }, failure: {
+          self.enableReloadButton()
+        })
+      }
+      
+      if chain.queuedBuildCount > 0 {
+        workingLabel.text = "\(chain.queuedBuildCount)"
+        workingLabel.isHidden = false
+      } else {
+        workingLabel.text = ""
+        workingLabel.isHidden = true
+      }
+    } else {
+      self.disableControls()
+      self.pies[self.currentPieIndex].disable()
+    }
+    
+    if !enabledControls {
+      enableReloadButton()
+    }
+    
+    if callback != nil {
+      callback!()
     }
   }
   
-  func initAudio(_ url: String, callback: @escaping () -> Void) {
+  func initAudio(_ url: String, callback: @escaping () -> Void, failure: @escaping () -> Void) {
     Alamofire.request(url).responseData(completionHandler: { dataResponse in
       if dataResponse.data != nil {
         do {
@@ -258,10 +519,21 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
           self.percentDivisor = 360 / self.audio!.duration
           callback()
         } catch {
-          NSLog("oh deary me. \(self.audio) failed to play in for url \(url)")
+          failure()
         }
       }
     })
+  }
+  
+  func openLink(sender: AnyObject) {
+    textField.isUserInteractionEnabled = true
+    textField.text = nil
+    textField.becomeFirstResponder()
+    showBackdrop()
+  }
+  
+  func handleBackdropTap(gestureRecognizer: UILongPressGestureRecognizer) {
+    hideBackdrop()
   }
   
   func handleLongPress(gestureRecognizer: UILongPressGestureRecognizer) {
@@ -274,6 +546,64 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func handleTap(gestureRecognizer: UITapGestureRecognizer) {
     playing ? stopPlaying() : startPlaying()
+  }
+  
+  func handleReloadTap(gestureRecognizer: UITapGestureRecognizer) {
+    showLoading({
+      reloadChain(chain: self.pies[self.currentPieIndex].chain!, completedCallback: { chain in
+        self.hideLoading({
+          var currentChains = self.chains()
+          
+          if let index = currentChains.index(where: { someChain in someChain.id == chain.id }) {
+            currentChains[index] = chain
+            
+            self.hideLoading({
+              self.createPies(chains: currentChains, callback: {
+                self.setPlayProgress(zero: true)
+              })
+            })
+          }
+        })
+      }, failedCallback: {
+        self.hideLoading({
+          showAlert(context: self, message: "failed to contact the server")
+        })
+      })
+    })
+  }
+  
+  func handleRandomizeTap(gestureRecognizer: UITapGestureRecognizer) {
+    showLoading({
+      fetchChains(nil, completedCallback: { chains, amount in
+        self.hideLoading({
+          self.createPies(chains: chains, callback: nil)
+        })
+      }, failedCallback: {
+        self.hideLoading({
+          showAlert(context: self, message: "failed to contact the server")
+        })
+      });
+    })
+  }
+  
+  func handleDownloadTap(gestureRecognizer: UITapGestureRecognizer) {
+    let alertController = UIAlertController(title: nil, message: "what do you want to save?", preferredStyle: .actionSheet)
+    
+    let wholeThing = UIAlertAction(title: "the whole chain", style: .default, handler: nil)
+    let justSound = UIAlertAction(title: "just the current sound", style: .default, handler: nil)
+    let cancelThisShit = UIAlertAction(title: "get outta here", style: .destructive, handler: nil)
+    
+    alertController.addAction(wholeThing)
+    alertController.addAction(justSound)
+    alertController.addAction(cancelThisShit)
+    
+    self.present(alertController, animated: true, completion: nil)
+  }
+  
+  func handleLinkTap(gestureRecognizer: UITapGestureRecognizer) {
+    textField.isUserInteractionEnabled = false
+    textField.text = pies[currentPieIndex].chain!.code
+    showBackdrop()
   }
   
   func handlePieTap(gestureRecognizer: UITapGestureRecognizer) {
@@ -292,6 +622,25 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     recorder.chain = pies[currentPieIndex].chain
     recorder.modalPresentationStyle = .popover
+    
+    recorder.additionCallback = { data, chain in
+      self.showLoading({
+        createSound(data: data, chainId: chain.id, completedCallback: { chain in
+          var currentChains = self.chains()
+          
+          if let index = currentChains.index(where: { someChain in someChain.id == chain.id }) {
+            currentChains[index] = chain
+            
+            self.hideLoading({
+              self.createPies(chains: currentChains, callback: {
+                self.setPlayProgress(zero: true)
+              })
+            })
+          }
+        }, failedCallback: {
+        })
+      })
+    }
     
     self.navigationController!.present(recorder, animated: true, completion: {})
   }
@@ -314,9 +663,10 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     if newX != 0.0 {
       self.unloadChain()
+      
       currentPieIndex += pieChange
       
-      UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
+      UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
         for view in self.piesHolder.subviews {
           view.frame.origin.x = view.frame.origin.x + newX
         }
@@ -328,38 +678,72 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       
       self.disableControls()
       
-      UIView.animate(withDuration: 0.2, delay: 0.0, options: .autoreverse, animations: {
+      UIView.animate(withDuration: 0.10, delay: 0.0, options: .curveEaseInOut, animations: {
         for view in self.piesHolder.subviews {
           view.frame.origin.x = view.frame.origin.x + CGFloat(bounceValue)
         }
       }, completion: { completed in
-        self.enableControls()
+        UIView.animate(withDuration: 0.10, delay: 0.0, options: .curveEaseInOut, animations: {
+          for view in self.piesHolder.subviews {
+            view.frame.origin.x = view.frame.origin.x - CGFloat(bounceValue)
+          }
+        }, completion: { completed in
+          self.loadChain()
+        })
       })
     }
+  }
+  
+  func enableReloadButton() {
+    if pies.count > 0 {
+      reloadButton.layer.opacity = 1.0
+      reloadButton.isUserInteractionEnabled = true
+    }
+    
+    randomizeButton.layer.opacity = 1.0
+    randomizeButton.isUserInteractionEnabled = true
   }
   
   func enableControls() {
     progress.strokeColor = UIColor.black.cgColor
     playButton.backgroundColor = .white
-    playButton.layer.opacity = 1.0
-    playButton.isUserInteractionEnabled = true
-    record.isUserInteractionEnabled = true
     record.layer.opacity = 1.0
+    playButton.layer.opacity = 1.0
+    linkButton.layer.opacity = 1.0
+    reloadButton.layer.opacity = 1.0
+    downloadButton.layer.opacity = 1.0
+    randomizeButton.layer.opacity = 1.0
+    record.isUserInteractionEnabled = true
+    playButton.isUserInteractionEnabled = true
+    linkButton.isUserInteractionEnabled = true
+    reloadButton.isUserInteractionEnabled = true
+    downloadButton.isUserInteractionEnabled = true
+    randomizeButton.isUserInteractionEnabled = true
+    record.layer.opacity = 1.0
+    
+    progress.removeFromSuperlayer()
+    view.layer.addSublayer(progress)
+    view.bringSubview(toFront: self.playButton)
   }
   
   func disableControls() {
+    workingLabel.isHidden = true
     progress.strokeColor = UIColor.clear.cgColor
     playButton.backgroundColor = .clear
-    playButton.layer.opacity = 0.5
-    playButton.isUserInteractionEnabled = false
-    record.isUserInteractionEnabled = false
     record.layer.opacity = 0.5
-  }
-  
-  func loadSoundPoints() {
-    for (_, soundWithTime) in currentChain!.soundsWithTimes.enumerated() {
-      soundPoints.append(soundWithTime.startTime!)
-    }
+    playButton.layer.opacity = 0.5
+    linkButton.layer.opacity = 0.5
+    reloadButton.layer.opacity = 0.5
+    downloadButton.layer.opacity = 0.5
+    randomizeButton.layer.opacity = 0.5
+    record.isUserInteractionEnabled = false
+    playButton.isUserInteractionEnabled = false
+    linkButton.isUserInteractionEnabled = false
+    reloadButton.isUserInteractionEnabled = false
+    downloadButton.isUserInteractionEnabled = false
+    randomizeButton.isUserInteractionEnabled = false
+    
+    view.bringSubview(toFront: self.piesHolder)
   }
   
   func startPlaying() {
@@ -380,10 +764,31 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     }
   }
   
-  func setPlayProgress() {
-    if audio != nil {
-      let angle = CGFloat(percentDivisor * audio!.currentTime)
+  func setPlayProgress(zero: Bool = false) {
+    var time: Double? = nil
+    
+    if zero {
+      time = 0.0
+    } else if audio != nil {
+      time = audio!.currentTime
+    }
+    
+    if time != nil {
+      let angle = CGFloat(percentDivisor * time!)
       updateProgress(angle: angle)
     }
+  }
+  
+  func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+    if range.location >= 4 {
+      return false;
+    } else {
+      return true;
+    }
+  }
+  
+  func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+    textField.resignFirstResponder();
+    return true;
   }
 }

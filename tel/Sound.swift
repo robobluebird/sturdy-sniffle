@@ -14,12 +14,14 @@ class Sound: NSObject {
   var url: String
   var duration: Float
   var position: Int
+  var color: String?
   
   override init() {
     id = ""
     url = ""
     duration = 0.0
     position = 0
+    color = nil
   }
   
   init?(json: JSON) {
@@ -27,6 +29,7 @@ class Sound: NSObject {
     url = json["url"].string ?? ""
     duration = json["duration"].float ?? 0.0
     position = json["position"].int ?? 0
+    color = json["color"].string
   }
   
   func displayTime() -> String {
