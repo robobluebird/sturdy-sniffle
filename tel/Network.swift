@@ -15,43 +15,59 @@ func constructUrl(_ tail: String) -> String {
   return "http://localhost:4567/\(tail)"
 }
 
-func createChain(data: Data, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping () -> Void) {
+func requestTemporaryToken(completedCallback: @escaping (String) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  post(constructUrl("access_tokens/new"), params: nil, completedCallback: { result in
+    if let token = result["token"].string {
+      completedCallback(token)
+    } else {
+      failedCallback(nil)
+    }
+  }, failedCallback: { status in
+    failedCallback(status)
+  })
+}
+
+func submitTemporaryToken(token: String, completedCallback: @escaping (String) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  post(constructUrl("access_tokens"), params: ["access_token": ["token": token]], completedCallback: { result in
+    if let token = result["token"].string {
+      completedCallback(token)
+    } else {
+      failedCallback(nil)
+    }
+  }, failedCallback: { status in
+    failedCallback(status)
+  })
+}
+
+func createChain(data: Data, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
   formPost(constructUrl("chains"), data: data, completedCallback: { result in
     if result["chain"] != nil {
       completedCallback(Chain(json: result["chain"])!)
     }
-  }, failedCallback: {
-    failedCallback()
+  }, failedCallback: { status in
+    failedCallback(status)
   })
 }
 
-func createSound(data: Data, chainId: String, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping () -> Void) {
+func createSound(data: Data, chainId: String, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
   formPost(constructUrl("chains/\(chainId)/sounds"), data: data, completedCallback: { result in
     if result["chain"] != nil {
       completedCallback(Chain(json: result["chain"])!)
     }
-  }, failedCallback: {
-    failedCallback()
+  }, failedCallback: { status in
+    failedCallback(status)
   })
 }
 
-func toggleSound(soundId: String, chainId: String, direction: String, completedCallback: @escaping (Bool) -> Void, failedCallback: @escaping () -> Void) {
+func toggleSound(soundId: String, chainId: String, direction: String, completedCallback: @escaping (Bool) -> Void, failedCallback: @escaping (Int?) -> Void) {
   post(constructUrl("chains/\(chainId)/sounds/\(soundId)/toggle"), params: ["sound": ["direction": direction]], completedCallback: { result in
     completedCallback(result["result"].boolValue)
-  }, failedCallback: {
-    failedCallback()
+  }, failedCallback: { status in
+    failedCallback(status)
   })
 }
 
-func deleteSound(soundId: String, chainId: String, completedCallback: @escaping (Bool) -> Void, failedCallback: @escaping () -> Void) {
-  post(constructUrl("chains/\(chainId)/sounds/\(soundId)/delete"), completedCallback: { result in
-    completedCallback(result["result"].boolValue)
-  }, failedCallback: {
-    failedCallback()
-  })
-}
-
-func fetchSounds(chainId: String, completedCallback: @escaping ([Sound]) -> Void, failedCallback: @escaping () -> Void) {
+func fetchSounds(chainId: String, completedCallback: @escaping ([Sound]) -> Void, failedCallback: @escaping (Int?) -> Void) {
   get(constructUrl("chains/\(chainId)/sounds"), completedCallback: { result in
     if let items = result["sounds"].array {
       var sounds = [Sound]()
@@ -62,26 +78,30 @@ func fetchSounds(chainId: String, completedCallback: @escaping ([Sound]) -> Void
       
       completedCallback(sounds)
     }
-  }, failedCallback: {
-    failedCallback()
+  }, failedCallback: { status in
+    failedCallback(status)
   })
 }
 
-func reloadChain(chain: Chain, completedCallback: ((Chain) -> Void)?, failedCallback: (() -> Void)?) {
-  let url = "chains/\(chain.id)"
+func fetchChain(_ code: String? = nil, chain: Chain, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  var url = "chains/"
+  
+  if code != nil {
+    url.append("by_code/\(code)")
+  } else {
+    url.append("\(chain.id)")
+  }
   
   get(constructUrl(url), completedCallback: { result in
     if let reloadedChain = Chain(json: result["chain"]) {
-      completedCallback!(reloadedChain)
+      completedCallback(reloadedChain)
     }
-  }, failedCallback: {
-    if failedCallback != nil {
-      failedCallback!()
-    }
+  }, failedCallback: { status in
+    failedCallback(status)
   })
 }
 
-func reloadChains(chains: [Chain], completedCallback: (([Chain]) -> Void)?, failedCallback: (() -> Void)?) {
+func reloadChains(chains: [Chain], completedCallback: @escaping ([Chain]) -> Void, failedCallback: @escaping (Int?) -> Void) {
   var url = "chains"
   
   if chains.count > 0 {
@@ -100,16 +120,14 @@ func reloadChains(chains: [Chain], completedCallback: (([Chain]) -> Void)?, fail
         chains.append(Chain(json: item)!)
       }
       
-      completedCallback!(chains)
+      completedCallback(chains)
     }
-  }, failedCallback: {
-    if failedCallback != nil {
-      failedCallback!()
-    }
+  }, failedCallback: { status in
+    failedCallback(status)
   })
 }
 
-func fetchChains(_ page: Int?, completedCallback: @escaping ([Chain], Int) -> Void, failedCallback: @escaping () -> Void) {
+func fetchChains(_ page: Int?, completedCallback: @escaping ([Chain], Int) -> Void, failedCallback: @escaping (Int?) -> Void) {
   var action = "chains"
   
   if page != nil {
@@ -127,56 +145,71 @@ func fetchChains(_ page: Int?, completedCallback: @escaping ([Chain], Int) -> Vo
       
       completedCallback(chains, (pages ?? 1))
     }
-  }, failedCallback: {
-    failedCallback()
+  }, failedCallback: { status in
+    failedCallback(status)
   })
 }
 
 // MARK: get and post and form
 
-func get(_ url: String, headers: [String: String]? = nil, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping () -> Void) {
+func get(_ url: String, headers: [String: String]? = nil, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping (Int?) -> Void) {
   
-  //  if let key = currentUser()?.apiKey {
-  //    let headers = ["Authorization": "Token token=\(key)"]
-  Alamofire.request(url, headers: headers).responseJSON { response in
-    if let result = response.result.value {
-      completedCallback(JSON(result))
-    } else {
-      failedCallback()
+  if let token = token() {
+   let headers = ["Authorization": "TOKEN Token=\(token)"]
+    
+    Alamofire.request(url, headers: headers).responseJSON { response in
+      if let result = response.result.value {
+        completedCallback(JSON(result))
+      } else {
+        failedCallback(response.response!.statusCode)
+      }
     }
+  } else {
+    failedCallback(400)
   }
-  //  }
 }
 
-func post(_ url: String, params: [String: NSDictionary]? = nil, headers: [String: String]? = nil, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping () -> Void) {
+func post(_ url: String, params: [String: NSDictionary]? = nil, useToken: Bool = true, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  var headers = [String: String]()
+  
+  if useToken {
+    if let token = token() {
+      headers = ["Authorization": "TOKEN Token=\(token)"]
+    }
+  }
+  
   Alamofire.request(url, method: HTTPMethod.post, parameters: params, encoding: JSONEncoding.default, headers: headers).responseJSON { response in
     if let result = response.result.value {
       completedCallback(JSON(result))
     } else {
-      failedCallback()
+      failedCallback(response.response!.statusCode)
     }
   }
 }
 
-func formPost(_ url: String, data: Data, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping () -> Void) {
+func formPost(_ url: String, data: Data, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  if let token = token() {
     Alamofire.upload(
       multipartFormData: { multipartFormData in
         multipartFormData.append(data, withName: "upload", fileName: createFilename("m4a"), mimeType: "audio/m4a")
       },
       to: url,
       method: .post,
-      headers: nil,
+      headers: ["Authorization": "TOKEN Token=\(token)"],
       encodingCompletion: { encodingResult in
         switch encodingResult {
         case .success(let upload, _, _):
           upload.responseJSON { response in
             if let result = response.result.value {
               completedCallback(JSON(result))
+            } else {
+              failedCallback(response.response!.statusCode)
             }
           }
         case .failure(_):
-          failedCallback()
+          failedCallback(400)
         }
       }
     )
+  }
 }

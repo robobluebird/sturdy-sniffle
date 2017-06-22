@@ -18,10 +18,32 @@ func randomColor() -> UIColor {
   return UIColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: 1.0)
 }
 
-func apiKey() -> String? {
+func register(registeredCallback: @escaping () -> Void, notRegisteredCallback: @escaping () -> Void) {
+  if token() == nil {
+    requestTemporaryToken(completedCallback: { token in
+      submitTemporaryToken(token: token, completedCallback: { token in
+        do {
+          try Locksmith.saveData(data: ["token": token], forUserAccount: "tel")
+          
+          registeredCallback()
+        } catch {
+          notRegisteredCallback()
+        }
+      }, failedCallback: { status in
+        notRegisteredCallback()
+      })
+    }, failedCallback: { status in
+      notRegisteredCallback()
+    })
+  } else {
+    registeredCallback()
+  }
+}
+
+func token() -> String? {
   if let data = Locksmith.loadDataForUserAccount(userAccount: "tel") {
-    if let key = data["key"] as? String {
-      return key
+    if let token = data["token"] as? String {
+      return token
     }
   }
   
@@ -42,24 +64,8 @@ func showAlert(context: UIViewController, title: String = "Error", message: Stri
   context.present(alertController, animated: true)
 }
 
-func accountName(handle: String) -> String {
-  return "gwolm_\(handle)"
-}
-
 func createFilename(_ type: String) -> String {
   return "\(Int(Date().timeIntervalSince1970)).\(type)"
-}
-
-func currentUser() -> User? {
-  if let userData = Locksmith.loadDataForUserAccount(userAccount: "gwolm") {
-    if let user = userData["currentUser"] as? User {
-      return user
-    } else {
-      return nil
-    }
-  } else {
-    return User()
-  }
 }
 
 func hexStringToUIColor(_ hex: String?) -> UIColor? {

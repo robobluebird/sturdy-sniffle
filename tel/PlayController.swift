@@ -45,6 +45,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   let screenCenterX = UIScreen.main.bounds.width / 2
   let screenCenterY = UIScreen.main.bounds.height / 2
   let pieSize = UIScreen.main.bounds.width / 2
+  var audioCache = [String: Data]()
   var pieTap: UITapGestureRecognizer?
   
   override func viewDidLoad() {
@@ -196,7 +197,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     // get chains
     fetchChains(nil, completedCallback: { chains, amount in
       self.createPies(chains: chains, callback: nil)
-    }, failedCallback: {
+    }, failedCallback: { status in
       showAlert(context: self, message: "failed to contact the server")
     });
   }
@@ -315,7 +316,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
           self.createPies(chains: chains, callback: {
             self.hideLoading()
           })
-        }, failedCallback: {})
+        }, failedCallback: { status in
+        })
       })
     }
     
@@ -510,19 +512,32 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func initAudio(_ url: String, callback: @escaping () -> Void, failure: @escaping () -> Void) {
-    Alamofire.request(url).responseData(completionHandler: { dataResponse in
-      if dataResponse.data != nil {
-        do {
-          try self.audio = AVAudioPlayer(data: dataResponse.data!)
-          self.audio!.delegate = self
-          self.audio!.prepareToPlay()
-          self.percentDivisor = 360 / self.audio!.duration
-          callback()
-        } catch {
-          failure()
-        }
+    if let data = audioCache[url] {
+      do {
+        try self.audio = AVAudioPlayer(data: data)
+        self.audio!.delegate = self
+        self.audio!.prepareToPlay()
+        self.percentDivisor = 360 / self.audio!.duration
+        callback()
+      } catch {
+        failure()
       }
-    })
+    } else {
+      Alamofire.request(url).responseData(completionHandler: { dataResponse in
+        if dataResponse.data != nil {
+          do {
+            try self.audio = AVAudioPlayer(data: dataResponse.data!)
+            self.audio!.delegate = self
+            self.audio!.prepareToPlay()
+            self.percentDivisor = 360 / self.audio!.duration
+            self.audioCache[url] = dataResponse.data!
+            callback()
+          } catch {
+            failure()
+          }
+        }
+      })
+    }
   }
   
   func openLink(sender: AnyObject) {
@@ -550,7 +565,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func handleReloadTap(gestureRecognizer: UITapGestureRecognizer) {
     showLoading({
-      reloadChain(chain: self.pies[self.currentPieIndex].chain!, completedCallback: { chain in
+      fetchChain(chain: self.pies[self.currentPieIndex].chain!, completedCallback: { chain in
         self.hideLoading({
           var currentChains = self.chains()
           
@@ -564,7 +579,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
             })
           }
         })
-      }, failedCallback: {
+      }, failedCallback: { status in
         self.hideLoading({
           showAlert(context: self, message: "failed to contact the server")
         })
@@ -578,7 +593,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
         self.hideLoading({
           self.createPies(chains: chains, callback: nil)
         })
-      }, failedCallback: {
+      }, failedCallback: { status in
         self.hideLoading({
           showAlert(context: self, message: "failed to contact the server")
         })
@@ -637,7 +652,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
               })
             })
           }
-        }, failedCallback: {
+        }, failedCallback: { status in
         })
       })
     }
