@@ -25,12 +25,10 @@
 		352892B91DAC3E84000E1E10 /* ChainCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892B81DAC3E84000E1E10 /* ChainCell.swift */; };
 		352892BB1DAC3E9A000E1E10 /* LoadingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892BA1DAC3E9A000E1E10 /* LoadingCell.swift */; };
 		352892BD1DAC3EB5000E1E10 /* SoundCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892BC1DAC3EB5000E1E10 /* SoundCell.swift */; };
-		352892C11DAC3F13000E1E10 /* RegistrationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892C01DAC3F13000E1E10 /* RegistrationController.swift */; };
 		352892C51DAC3F41000E1E10 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892C41DAC3F41000E1E10 /* User.swift */; };
 		352892C71DAC3F47000E1E10 /* Chain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892C61DAC3F47000E1E10 /* Chain.swift */; };
 		352892C91DAC3F50000E1E10 /* Sound.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892C81DAC3F50000E1E10 /* Sound.swift */; };
 		352892CB1DAC3F6A000E1E10 /* SoundWithTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892CA1DAC3F6A000E1E10 /* SoundWithTime.swift */; };
-		352892CD1DAC3F74000E1E10 /* Update.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892CC1DAC3F74000E1E10 /* Update.swift */; };
 		352B488A1ED45F780013F3CE /* UIFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352B48891ED45F780013F3CE /* UIFont.swift */; };
 		353477741DBE2B0B0051420F /* ValidatesTextProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353477731DBE2B0B0051420F /* ValidatesTextProtocol.swift */; };
 		353C7E891DD658F3002E50E7 /* InterestingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353C7E881DD658F3002E50E7 /* InterestingView.swift */; };
@@ -89,12 +87,10 @@
 		352892B81DAC3E84000E1E10 /* ChainCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChainCell.swift; sourceTree = "<group>"; };
 		352892BA1DAC3E9A000E1E10 /* LoadingCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoadingCell.swift; sourceTree = "<group>"; };
 		352892BC1DAC3EB5000E1E10 /* SoundCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SoundCell.swift; sourceTree = "<group>"; };
-		352892C01DAC3F13000E1E10 /* RegistrationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegistrationController.swift; sourceTree = "<group>"; };
 		352892C41DAC3F41000E1E10 /* User.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		352892C61DAC3F47000E1E10 /* Chain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Chain.swift; sourceTree = "<group>"; };
 		352892C81DAC3F50000E1E10 /* Sound.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sound.swift; sourceTree = "<group>"; };
 		352892CA1DAC3F6A000E1E10 /* SoundWithTime.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SoundWithTime.swift; sourceTree = "<group>"; };
-		352892CC1DAC3F74000E1E10 /* Update.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Update.swift; sourceTree = "<group>"; };
 		352B48891ED45F780013F3CE /* UIFont.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIFont.swift; sourceTree = "<group>"; };
 		353477731DBE2B0B0051420F /* ValidatesTextProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValidatesTextProtocol.swift; sourceTree = "<group>"; };
 		353C7E881DD658F3002E50E7 /* InterestingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InterestingView.swift; sourceTree = "<group>"; };
@@ -213,7 +209,6 @@
 		352892B61DAC3E50000E1E10 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				352892C01DAC3F13000E1E10 /* RegistrationController.swift */,
 				350B80FA1DB5DCC500D4CA46 /* RecordingController.swift */,
 				351579461EB13FEC0098F4A7 /* PlayController.swift */,
 			);
@@ -229,7 +224,6 @@
 				352892C61DAC3F47000E1E10 /* Chain.swift */,
 				352892C81DAC3F50000E1E10 /* Sound.swift */,
 				352892CA1DAC3F6A000E1E10 /* SoundWithTime.swift */,
-				352892CC1DAC3F74000E1E10 /* Update.swift */,
 				353C7E881DD658F3002E50E7 /* InterestingView.swift */,
 				353C7E8A1DD67789002E50E7 /* ProgressBarSegementUITapGestureRecognizer.swift */,
 				35DA4CF41DD7AC9A00694C6C /* UITapGestureRecognizerWithInt.swift */,
@@ -447,7 +441,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		F3E3FF454CBA85E8049F4681 /* [CP] Copy Pods Resources */ = {
@@ -479,7 +473,6 @@
 				35272B221DAAA18C00F66736 /* ViewController.swift in Sources */,
 				3509829C1DAC43D300B3C016 /* Network.swift in Sources */,
 				353477741DBE2B0B0051420F /* ValidatesTextProtocol.swift in Sources */,
-				352892CD1DAC3F74000E1E10 /* Update.swift in Sources */,
 				350B80FB1DB5DCC500D4CA46 /* RecordingController.swift in Sources */,
 				3509829A1DAC43AF00B3C016 /* Utilities.swift in Sources */,
 				35903E061DF1030F0039502E /* UITapGestureWithCell.swift in Sources */,
@@ -499,7 +492,6 @@
 				352892C91DAC3F50000E1E10 /* Sound.swift in Sources */,
 				352892BB1DAC3E9A000E1E10 /* LoadingCell.swift in Sources */,
 				353C7E891DD658F3002E50E7 /* InterestingView.swift in Sources */,
-				352892C11DAC3F13000E1E10 /* RegistrationController.swift in Sources */,
 				35DA4CF51DD7AC9A00694C6C /* UITapGestureRecognizerWithInt.swift in Sources */,
 				352892C51DAC3F41000E1E10 /* User.swift in Sources */,
 				351579471EB13FEC0098F4A7 /* PlayController.swift in Sources */,

@@ -36,6 +36,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var randomizeButton = UIView()
   var downloadButton = UIView()
   var linkButton = UIView()
+  var submitCodeButton = UIView()
   var nothingHereLabel = UILabel()
   var workingLabel = UILabel()
   var textField = UITextField()
@@ -66,20 +67,25 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     view.addSubview(nothingHereLabel)
     
     // backdrop
-    let backdropOrigin = CGPoint(x: -totalWidth, y: (totalHeight / 2) - (pieSize / 2))
-    let backdropSize = CGSize(width: totalWidth, height: coveringSize)
     
-    backdrop = UIView(frame: CGRect(origin: backdropOrigin, size: backdropSize))
-    backdrop.backgroundColor = .black
+    backdrop = UIView(frame: CGRect(x: -totalWidth, y: 0, width: totalWidth, height: totalHeight))
+    backdrop.backgroundColor = .clear
     
     let backdropTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleBackdropTap(gestureRecognizer:)))
     backdrop.addGestureRecognizer(backdropTap)
+    
+    let foredropOrigin = CGPoint(x: -totalWidth, y: (totalHeight / 2) - (pieSize / 2))
+    let foredropSize = CGSize(width: totalWidth, height: coveringSize)
+    let foredrop = UIView(frame: CGRect(origin: foredropOrigin, size: foredropSize))
+    foredrop.backgroundColor = .black
+    
+    backdrop.addSubview(foredrop)
     
     textField = UITextField(frame: CGRect(x: totalWidth * 0.1, y: (coveringSize / 2) - (pieSize / 4), width: totalWidth * 0.8, height: pieSize / 2))
     textField.placeholder = "CODE"
     textField.font = UIFont.systemFont(ofSize: 50).italic()
     textField.textColor = .white
-    textField.borderStyle = .none
+    textField.borderStyle = .bezel
     textField.autocorrectionType = .no
     textField.autocapitalizationType = .allCharacters
     textField.keyboardType = .default
@@ -90,7 +96,15 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     textField.tintColor = .white
     textField.delegate = self
     
-    backdrop.addSubview(textField)
+    submitCodeButton = UIView(frame: CGRect(x: totalWidth * 0.85, y: (coveringSize / 2) - (pieSize / 4), width: pieSize / 2, height: pieSize / 2))
+    let go = InterestingView(frame: CGRect(x: 0, y: 0, width: pieSize / 2, height: pieSize / 3), shape: Shape.ok, color: UIColor.green)
+    go.backgroundColor = UIColor.clear
+    submitCodeButton.addSubview(go)
+    let submitCodeAction = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleSubmitCodeButtonTap(gestureRecognizer:)))
+    submitCodeButton.addGestureRecognizer(submitCodeAction)
+    
+    foredrop.addSubview(textField)
+    foredrop.addSubview(submitCodeButton)
     view.addSubview(backdrop)
     
     // loading
@@ -194,12 +208,14 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     disableControls()
     configurePieHolder()
     
-    // get chains
-    fetchChains(nil, completedCallback: { chains, amount in
-      self.createPies(chains: chains, callback: nil)
-    }, failedCallback: { status in
-      showAlert(context: self, message: "failed to contact the server")
-    });
+    register(registeredCallback: {
+      fetchChains(nil, completedCallback: { chains, amount in
+        self.createPies(chains: chains, callback: nil)
+      }, failedCallback: { status in
+        showAlert(context: self, message: "failed to contact the server")
+      });
+    }, notRegisteredCallback: { status in
+    })
   }
   
   override func didReceiveMemoryWarning() {
@@ -547,7 +563,11 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     showBackdrop()
   }
   
-  func handleBackdropTap(gestureRecognizer: UILongPressGestureRecognizer) {
+  func handleSubmitCodeButtonTap(gestureRecognizer: UITapGestureRecognizer) {
+    
+  }
+  
+  func handleBackdropTap(gestureRecognizer: UITapGestureRecognizer) {
     hideBackdrop()
   }
   

@@ -41,7 +41,7 @@ func submitTemporaryToken(token: String, completedCallback: @escaping (String) -
 
 func createChain(data: Data, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
   formPost(constructUrl("chains"), data: data, completedCallback: { result in
-    if result["chain"] != nil {
+    if result["chain"] != JSON.null {
       completedCallback(Chain(json: result["chain"])!)
     }
   }, failedCallback: { status in
@@ -161,28 +161,24 @@ func get(_ url: String, headers: [String: String]? = nil, completedCallback: @es
       if let result = response.result.value {
         completedCallback(JSON(result))
       } else {
-        failedCallback(response.response!.statusCode)
+        failedCallback(response.response?.statusCode)
       }
     }
-  } else {
-    failedCallback(400)
   }
 }
 
-func post(_ url: String, params: [String: NSDictionary]? = nil, useToken: Bool = true, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping (Int?) -> Void) {
+func post(_ url: String, params: [String: NSDictionary]? = nil, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping (Int?) -> Void) {
   var headers = [String: String]()
   
-  if useToken {
-    if let token = token() {
-      headers = ["Authorization": "TOKEN Token=\(token)"]
-    }
+  if let token = token() {
+    headers = ["Authorization": "TOKEN Token=\(token)"]
   }
   
-  Alamofire.request(url, method: HTTPMethod.post, parameters: params, encoding: JSONEncoding.default, headers: headers).responseJSON { response in
+  Alamofire.request(url, method: HTTPMethod.post, parameters: params, encoding: URLEncoding.default, headers: headers).responseJSON { response in
     if let result = response.result.value {
       completedCallback(JSON(result))
     } else {
-      failedCallback(response.response!.statusCode)
+      failedCallback(response.response?.statusCode)
     }
   }
 }
@@ -203,7 +199,7 @@ func formPost(_ url: String, data: Data, completedCallback: @escaping (_ result:
             if let result = response.result.value {
               completedCallback(JSON(result))
             } else {
-              failedCallback(response.response!.statusCode)
+              failedCallback(response.response?.statusCode)
             }
           }
         case .failure(_):

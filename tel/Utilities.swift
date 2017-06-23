@@ -18,7 +18,7 @@ func randomColor() -> UIColor {
   return UIColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: 1.0)
 }
 
-func register(registeredCallback: @escaping () -> Void, notRegisteredCallback: @escaping () -> Void) {
+func register(registeredCallback: @escaping () -> Void, notRegisteredCallback: @escaping (Int?) -> Void) {
   if token() == nil {
     requestTemporaryToken(completedCallback: { token in
       submitTemporaryToken(token: token, completedCallback: { token in
@@ -27,13 +27,13 @@ func register(registeredCallback: @escaping () -> Void, notRegisteredCallback: @
           
           registeredCallback()
         } catch {
-          notRegisteredCallback()
+          notRegisteredCallback(400)
         }
       }, failedCallback: { status in
-        notRegisteredCallback()
+        notRegisteredCallback(status)
       })
     }, failedCallback: { status in
-      notRegisteredCallback()
+      notRegisteredCallback(status)
     })
   } else {
     registeredCallback()
