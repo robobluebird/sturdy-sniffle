@@ -55,6 +55,10 @@ class Pie: UIView {
     return pow(center.x-point.x, 2) + pow(center.y - point.y, 2) <= pow(bounds.size.width/2, 2)
   }
   
+  func rotate(degreeAngle: CGFloat) {
+    self.transform = CGAffineTransform(rotationAngle: -(degreeAngle * CGFloat(M_PI/180)))
+  }
+  
   func coverFrame() -> CGRect {
     let x = (frame.width - innerDiameter!) / 2
     let y = (frame.height - innerDiameter!) / 2

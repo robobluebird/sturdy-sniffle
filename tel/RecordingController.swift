@@ -46,9 +46,9 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   let buttonSize = UIScreen.main.bounds.width / 2
   let actionSize = UIScreen.main.bounds.width / 4
   
-  var goButton: UIView?
-  var cancelButton: UIView?
-  var clearButton: UIView?
+  var goButton = UIView()
+  var cancelButton = UIView()
+  var clearButton = UIView()
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -88,31 +88,31 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     goButton = UIView(frame: CGRect(x: x, y: y, width: actionSize, height: actionSize))
     let go = InterestingView(frame: CGRect(x: 0, y: 0, width: actionSize, height: actionSize), shape: Shape.ok, color: UIColor.green)
     go.backgroundColor = UIColor.clear
-    goButton!.addSubview(go)
+    goButton.addSubview(go)
     let goAction = UITapGestureRecognizer(target: self, action: #selector(RecordingController.goButtonTapped(gesture:)))
-    goButton!.addGestureRecognizer(goAction)
+    goButton.addGestureRecognizer(goAction)
     
     // cancel button
     cancelButton = UIView(frame: CGRect(x: x * 5, y: y, width: actionSize, height: actionSize))
     let cancel = InterestingView(frame: CGRect(x: 0, y: 0, width: actionSize, height: actionSize), shape: Shape.delete)
     cancel.backgroundColor = UIColor.clear
-    cancelButton!.addSubview(cancel)
+    cancelButton.addSubview(cancel)
     let cancelAction = UITapGestureRecognizer(target: self, action: #selector(RecordingController.cancelButtonTapped(gesture:)))
-    cancelButton!.addGestureRecognizer(cancelAction)
+    cancelButton.addGestureRecognizer(cancelAction)
     
     // clear button
     clearButton = UIView(frame: CGRect(x: UIScreen.main.bounds.width / 2 - (actionSize / 4 / 2), y: (y * 0.25) - (actionSize / 4), width: actionSize / 4, height: actionSize / 4))
     let clear = InterestingView(frame: CGRect(x: 0, y: 0, width: actionSize / 4, height: actionSize / 4), shape: Shape.delete, color: UIColor.red)
     clear.backgroundColor = UIColor.clear
-    clearButton!.backgroundColor = UIColor.clear
-    clearButton!.addSubview(clear)
+    clearButton.backgroundColor = UIColor.clear
+    clearButton.addSubview(clear)
     
     let clearAction = UITapGestureRecognizer(target: self, action: #selector(RecordingController.clearButtonTapped(gesture:)))
-    clearButton!.addGestureRecognizer(clearAction)
+    clearButton.addGestureRecognizer(clearAction)
     
-    view.addSubview(goButton!)
-    view.addSubview(cancelButton!)
-    view.addSubview(clearButton!)
+    view.addSubview(goButton)
+    view.addSubview(cancelButton)
+    view.addSubview(clearButton)
   }
   
   func configureAudioSession() {
@@ -376,23 +376,23 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   }
   
   func enableGoButton() {
-    goButton!.isUserInteractionEnabled = true
-    goButton!.alpha = 1.0
+    goButton.isUserInteractionEnabled = true
+    goButton.alpha = 1.0
   }
   
   func disableGoButton() {
-    goButton!.isUserInteractionEnabled = false
-    goButton!.alpha = 0.2
+    goButton.isUserInteractionEnabled = false
+    goButton.alpha = 0.2
   }
   
   func enableClearButton() {
-    clearButton!.isUserInteractionEnabled = true
-    clearButton!.isHidden = false
+    clearButton.isUserInteractionEnabled = true
+    clearButton.isHidden = false
   }
   
   func disableClearButton() {
-    clearButton!.isUserInteractionEnabled = false
-    clearButton!.isHidden = true
+    clearButton.isUserInteractionEnabled = false
+    clearButton.isHidden = true
   }
   
   func goButtonTapped(gesture: UITapGestureRecognizer) {

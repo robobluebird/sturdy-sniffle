@@ -16,7 +16,6 @@ class Chain: NSObject {
   var duration: Float
   var code: String
   var sounds = [Sound]()
-  var soundsWithTimes = [SoundWithTime]()
   var queuedBuildCount: Int
   
   override init() {
@@ -35,12 +34,7 @@ class Chain: NSObject {
     code = json["code"].string!
     duration = json["duration"].float ?? 0.0
     queuedBuildCount = json["queued_build_count"].int ?? 0
-    
     sounds = json["sounds"].array!.map { item in Sound(json: item)! }
-    
-    if let swt = json["sounds_with_times"].array {
-      soundsWithTimes = swt.map { item in SoundWithTime(json: item)! }
-    }
   }
   
   func displayTime() -> String {

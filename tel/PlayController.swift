@@ -11,9 +11,6 @@ import AVFoundation
 import Alamofire
 
 class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate {
-  @IBOutlet var piesHolder: UIView!
-  @IBOutlet var piesHolderHeight: NSLayoutConstraint!
-  
   var progress = CAShapeLayer()
   var percentDivisor = 0.0
   var lpgr: UILongPressGestureRecognizer?
@@ -28,6 +25,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var currentPieIndex = 0
   var playing = false
   var record = UIView()
+  var piesHolder = UIView()
   var playButton = UIView()
   var playButtonGraphic = UIView()
   var loadingScreen = UIView()
@@ -54,7 +52,11 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     let coveringSize = pieSize + (pieSize / 8)
     
-    //nothing
+    // piesHolder
+    piesHolder = UIView(frame: CGRect(x: 0, y: screenCenterY - pieSize / 2, width: totalWidth, height: pieSize))
+    view.addSubview(piesHolder)
+    
+    // nothing
     let nothingOrigin = CGPoint(x: 0, y: (totalHeight / 2) - (pieSize / 4))
     let nothingSize = CGSize(width: totalWidth, height: pieSize / 2)
     nothingHereLabel = UILabel(frame: CGRect(origin: nothingOrigin, size: nothingSize))
@@ -66,26 +68,26 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     nothingHereLabel.isHidden = true
     view.addSubview(nothingHereLabel)
     
-    // backdrop
+    // download chooser
     
+    // backdrop
     backdrop = UIView(frame: CGRect(x: -totalWidth, y: 0, width: totalWidth, height: totalHeight))
     backdrop.backgroundColor = .clear
     
     let backdropTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleBackdropTap(gestureRecognizer:)))
     backdrop.addGestureRecognizer(backdropTap)
     
-    let foredropOrigin = CGPoint(x: -totalWidth, y: (totalHeight / 2) - (pieSize / 2))
+    let foredropOrigin = CGPoint(x: 0, y: (totalHeight / 2) - (pieSize / 2))
     let foredropSize = CGSize(width: totalWidth, height: coveringSize)
     let foredrop = UIView(frame: CGRect(origin: foredropOrigin, size: foredropSize))
     foredrop.backgroundColor = .black
     
     backdrop.addSubview(foredrop)
     
-    textField = UITextField(frame: CGRect(x: totalWidth * 0.1, y: (coveringSize / 2) - (pieSize / 4), width: totalWidth * 0.8, height: pieSize / 2))
-    textField.placeholder = "CODE"
+    textField = UITextField(frame: CGRect(x: totalWidth * 0.1, y: (coveringSize / 2) - (pieSize / 4), width: totalWidth * 0.6, height: pieSize / 2))
     textField.font = UIFont.systemFont(ofSize: 50).italic()
     textField.textColor = .white
-    textField.borderStyle = .bezel
+    textField.borderStyle = .none
     textField.autocorrectionType = .no
     textField.autocapitalizationType = .allCharacters
     textField.keyboardType = .default
@@ -96,8 +98,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     textField.tintColor = .white
     textField.delegate = self
     
-    submitCodeButton = UIView(frame: CGRect(x: totalWidth * 0.85, y: (coveringSize / 2) - (pieSize / 4), width: pieSize / 2, height: pieSize / 2))
-    let go = InterestingView(frame: CGRect(x: 0, y: 0, width: pieSize / 2, height: pieSize / 3), shape: Shape.ok, color: UIColor.green)
+    submitCodeButton = UIView(frame: CGRect(x: totalWidth * 0.7, y: (coveringSize / 2) - (pieSize / 4), width: totalWidth * 0.2, height: totalWidth * 0.2))
+    let go = InterestingView(frame: CGRect(x: 0, y: 0, width: totalWidth * 0.2, height: totalWidth * 0.2), shape: Shape.ok, color: UIColor.green)
     go.backgroundColor = UIColor.clear
     submitCodeButton.addSubview(go)
     let submitCodeAction = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleSubmitCodeButtonTap(gestureRecognizer:)))
@@ -196,6 +198,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     // progress
     progress = progressPie()
+    progress.isHidden = true
     
     // audio
     configureAudioSession()
@@ -225,7 +228,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func showBackdrop(_ showCompleted: (() -> Void)? = nil) {
     view.bringSubview(toFront: backdrop)
     
-    UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseInOut, animations: {
+    UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseOut, animations: {
       self.backdrop.frame.origin.x = 0
     }, completion: { completed in
       if showCompleted != nil {
@@ -235,7 +238,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func hideBackdrop(_ hideCompleted: (() -> Void)? = nil) {
-    UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseInOut, animations: {
+    UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseOut, animations: {
       self.backdrop.frame.origin.x = self.backdrop.frame.origin.x - self.totalWidth
     }, completion: { completed in
       self.textField.resignFirstResponder();
@@ -249,7 +252,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func showLoading(_ showCompleted: (() -> Void)? = nil) {
     view.bringSubview(toFront: loadingScreen)
     
-    UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseInOut, animations: {
+    UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseOut, animations: {
       self.loadingScreen.frame.origin.x = 0
     }, completion: { completed in
       if showCompleted != nil {
@@ -259,7 +262,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func hideLoading(_ hideCompleted: (() -> Void)? = nil) {
-    UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseInOut, animations: {
+    UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseOut, animations: {
       self.loadingScreen.frame.origin.x = self.loadingScreen.frame.origin.x - self.totalWidth
     }, completion: { completed in
       if hideCompleted != nil {
@@ -306,8 +309,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func configurePieHolder() {
-    piesHolderHeight.constant = pieSize
-    
     // for some reason we require left and right swipe definitions? 🤔
     lsg = UISwipeGestureRecognizer(target: self, action: #selector(PlayController.handleSwipe(gestureRecognizer:)))
     rsg = UISwipeGestureRecognizer(target: self, action: #selector(PlayController.handleSwipe(gestureRecognizer:)))
@@ -436,8 +437,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     return layer
   }
   
-  func updateProgress(angle: CGFloat) {
-    let radians = (angle - 90) * (CGFloat(M_PI) / 180)
+  func updateProgress(degreeAngle: CGFloat) {
+    let radians = (degreeAngle - 90) * (CGFloat(M_PI) / 180)
     let newX = screenCenterX + (pieSize / 2 - progressSize) * cos(radians)
     let newY = screenCenterY + (pieSize / 2 - progressSize) * sin(radians)
     
@@ -477,6 +478,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     stopPlaying()
     disableControls()
     pies[currentPieIndex].removeGestureRecognizer(pieTap!)
+    pies[currentPieIndex].rotate(degreeAngle: 0)
   }
   
   func loadChain(_ callback: (() -> Void)? = nil) {
@@ -557,14 +559,17 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func openLink(sender: AnyObject) {
+    submitCodeButton.isHidden = false
+    submitCodeButton.layer.opacity = 0.5
     textField.isUserInteractionEnabled = true
     textField.text = nil
+    textField.placeholder = "CODE"
     textField.becomeFirstResponder()
     showBackdrop()
   }
   
   func handleSubmitCodeButtonTap(gestureRecognizer: UITapGestureRecognizer) {
-    
+    print("yay")
   }
   
   func handleBackdropTap(gestureRecognizer: UITapGestureRecognizer) {
@@ -638,6 +643,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func handleLinkTap(gestureRecognizer: UITapGestureRecognizer) {
     textField.isUserInteractionEnabled = false
     textField.text = pies[currentPieIndex].chain!.code
+    submitCodeButton.isHidden = true
+    submitCodeButton.isUserInteractionEnabled = false
     showBackdrop()
   }
   
@@ -701,7 +708,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       
       currentPieIndex += pieChange
       
-      UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
+      UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseOut, animations: {
         for view in self.piesHolder.subviews {
           view.frame.origin.x = view.frame.origin.x + newX
         }
@@ -713,12 +720,12 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       
       self.disableControls()
       
-      UIView.animate(withDuration: 0.10, delay: 0.0, options: .curveEaseInOut, animations: {
+      UIView.animate(withDuration: 0.10, delay: 0.0, options: .curveLinear, animations: {
         for view in self.piesHolder.subviews {
           view.frame.origin.x = view.frame.origin.x + CGFloat(bounceValue)
         }
       }, completion: { completed in
-        UIView.animate(withDuration: 0.10, delay: 0.0, options: .curveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.10, delay: 0.0, options: .curveEaseOut, animations: {
           for view in self.piesHolder.subviews {
             view.frame.origin.x = view.frame.origin.x - CGFloat(bounceValue)
           }
@@ -810,16 +817,24 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     if time != nil {
       let angle = CGFloat(percentDivisor * time!)
-      updateProgress(angle: angle)
+      updateProgress(degreeAngle: angle)
+      pies[currentPieIndex].rotate(degreeAngle: angle)
     }
   }
   
   func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-    if range.location >= 4 {
-      return false;
+    guard let text = textField.text else { return true }
+    let newLength = text.characters.count + string.characters.count - range.length
+    
+    if newLength == 4 {
+      submitCodeButton.layer.opacity = 1.0
+      submitCodeButton.isUserInteractionEnabled = true
     } else {
-      return true;
+      submitCodeButton.layer.opacity = 0.5
+      submitCodeButton.isUserInteractionEnabled = false
     }
+    
+    return newLength <= 4
   }
   
   func textFieldShouldReturn(_ textField: UITextField) -> Bool {

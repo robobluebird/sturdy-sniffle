@@ -4,6 +4,6 @@ use_frameworks!
 
 target 'tel' do
   pod 'Alamofire'
-  pod 'Locksmith'
   pod 'SwiftyJSON'
+  pod 'Locksmith'
 end

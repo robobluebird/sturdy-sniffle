@@ -8,7 +8,6 @@
 
 import UIKit
 import Locksmith
-import SwiftyJSON
 
 func randomColor() -> UIColor {
   let randomRed:CGFloat = CGFloat(drand48())
@@ -27,7 +26,7 @@ func register(registeredCallback: @escaping () -> Void, notRegisteredCallback: @
           
           registeredCallback()
         } catch {
-          notRegisteredCallback(400)
+          notRegisteredCallback(nil)
         }
       }, failedCallback: { status in
         notRegisteredCallback(status)

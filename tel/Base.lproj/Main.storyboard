@@ -37,27 +37,9 @@
                     <view key="view" contentMode="scaleToFill" id="gJm-Q3-dLK">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xOW-P4-Lqj">
-                                <rect key="frame" x="0.0" y="259" width="375" height="150"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="150" id="6aK-bW-BhS"/>
-                                </constraints>
-                            </view>
-                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                        <constraints>
-                            <constraint firstItem="xOW-P4-Lqj" firstAttribute="centerY" secondItem="gJm-Q3-dLK" secondAttribute="centerY" id="8ZT-jg-dAb"/>
-                            <constraint firstItem="xOW-P4-Lqj" firstAttribute="leading" secondItem="gJm-Q3-dLK" secondAttribute="leading" id="9Nh-DO-JVq"/>
-                            <constraint firstAttribute="trailing" secondItem="xOW-P4-Lqj" secondAttribute="trailing" id="aUB-UZ-9Ju"/>
-                        </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="cMG-OP-EJM"/>
-                    <connections>
-                        <outlet property="piesHolder" destination="xOW-P4-Lqj" id="27A-Dg-JPF"/>
-                        <outlet property="piesHolderHeight" destination="6aK-bW-BhS" id="Ln6-We-K64"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="28j-tK-f58" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

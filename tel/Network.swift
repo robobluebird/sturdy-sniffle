@@ -8,7 +8,6 @@
 
 import UIKit
 import Alamofire
-import Locksmith
 import SwiftyJSON
 
 func constructUrl(_ tail: String) -> String {
@@ -51,7 +50,7 @@ func createChain(data: Data, completedCallback: @escaping (Chain) -> Void, faile
 
 func createSound(data: Data, chainId: String, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
   formPost(constructUrl("chains/\(chainId)/sounds"), data: data, completedCallback: { result in
-    if result["chain"] != nil {
+    if result["chain"] != JSON.null {
       completedCallback(Chain(json: result["chain"])!)
     }
   }, failedCallback: { status in
