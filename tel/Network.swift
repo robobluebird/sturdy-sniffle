@@ -82,16 +82,18 @@ func fetchSounds(chainId: String, completedCallback: @escaping ([Sound]) -> Void
   })
 }
 
-func fetchChain(_ code: String? = nil, chain: Chain, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  var url = "chains/"
-  
-  if code != nil {
-    url.append("by_code/\(code)")
-  } else {
-    url.append("\(chain.id)")
-  }
-  
-  get(constructUrl(url), completedCallback: { result in
+func fetchChainByCode(code: String, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  get(constructUrl("codes/\(code)/chain"), completedCallback: { result in
+    if let chain = Chain(json: result["chain"]) {
+      completedCallback(chain)
+    }
+  }, failedCallback: { status in
+    failedCallback(status)
+  })
+}
+
+func fetchChain(chain: Chain, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  get(constructUrl("chains/\(chain.id)"), completedCallback: { result in
     if let reloadedChain = Chain(json: result["chain"]) {
       completedCallback(reloadedChain)
     }

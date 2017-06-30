@@ -16,4 +16,5 @@ enum Shape {
   case delete
   case ok
   case upwardPointingArrow
+  case email
 }

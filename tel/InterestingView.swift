@@ -106,6 +106,11 @@ class InterestingView : UIView {
       context.addLine(to: CGPoint(x: rect.maxX * 0.3, y: rect.maxY * 0.8))
       context.addLine(to: CGPoint(x: rect.maxX * 0.1, y: rect.maxY * 0.6))
       context.closePath()
+    } else if shape == Shape.email {
+      context.addRect(CGRect(x: rect.maxX * 0.1, y: rect.maxY * 0.2, width: 2, height: rect.maxX * 0.8))
+      context.addRect(CGRect(x: rect.maxX * 0.1, y: rect.maxY * 0.8, width: rect.maxX * 0.8, height: 2))
+      context.addRect(CGRect(x: rect.maxX * 0.9, y: rect.maxY * 0.2, width: 2, height: rect.maxX * 0.8))
+      context.addRect(CGRect(x: rect.maxX * 0.1, y: rect.maxY * 0.2, width: rect.maxX * 0.8, height: 2))
     } else {
       return
     }

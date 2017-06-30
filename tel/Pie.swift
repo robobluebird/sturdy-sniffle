@@ -17,6 +17,7 @@ class Pie: UIView {
   var centerX, centerY: CGFloat?
   var enabled = true
   var processingLabel = UILabel()
+  var currentAngle = CGFloat(0)
   
   init(chain: Chain, origin: (x: CGFloat, y: CGFloat), size: CGFloat) {
     let frame = CGRect(x: origin.x, y: origin.y, width: size, height: size)
@@ -55,8 +56,18 @@ class Pie: UIView {
     return pow(center.x-point.x, 2) + pow(center.y - point.y, 2) <= pow(bounds.size.width/2, 2)
   }
   
-  func rotate(degreeAngle: CGFloat) {
-    self.transform = CGAffineTransform(rotationAngle: -(degreeAngle * CGFloat(M_PI/180)))
+  func rotateTo(degreeAngle: CGFloat) {
+    self.currentAngle = -degreeAngle
+    rotate()
+  }
+  
+  func rotateBy(degreeAngle: CGFloat) {
+    self.currentAngle += degreeAngle
+    rotate()
+  }
+  
+  private func rotate() {
+    self.transform = CGAffineTransform(rotationAngle: self.currentAngle * CGFloat(M_PI/180))
   }
   
   func coverFrame() -> CGRect {
