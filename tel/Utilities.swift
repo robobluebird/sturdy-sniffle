@@ -53,7 +53,32 @@ func save() -> Bool {
   return false
 }
 
-func showAlert(context: UIViewController, title: String = "Error", message: String) {
+func handleErrorCode(code: Int, alertContext: UIViewController?) {
+  var message = ""
+  
+  switch code {
+  case 400:
+    message = "we failed. please try again soon"
+  case 401:
+    message = "you are not authorized"
+  case 403:
+    message = "you are banned"
+  case 422:
+    message = "the submitted sound was too short or too quiet, so we couldn't process it"
+  case 437:
+    message = "we couldn't load this audio"
+  case 500:
+    message = "help! are you connected to the internet?"
+  default:
+    message = "so far in the weeds that we might as well give up at this point"
+  }
+  
+  if alertContext != nil {
+    showAlert(context: alertContext!, message: message)
+  }
+}
+
+func showAlert(context: UIViewController, title: String? = nil, message: String) {
   let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
   
   let OKAction = UIAlertAction(title: "cool", style: .default)

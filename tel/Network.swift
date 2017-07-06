@@ -19,7 +19,7 @@ func requestTemporaryToken(completedCallback: @escaping (String) -> Void, failed
     if let token = result["token"].string {
       completedCallback(token)
     } else {
-      failedCallback(nil)
+      failedCallback(500)
     }
   }, failedCallback: { status in
     failedCallback(status)
@@ -31,7 +31,7 @@ func submitTemporaryToken(token: String, completedCallback: @escaping (String) -
     if let token = result["token"].string {
       completedCallback(token)
     } else {
-      failedCallback(nil)
+      failedCallback(500)
     }
   }, failedCallback: { status in
     failedCallback(status)
@@ -159,10 +159,14 @@ func get(_ url: String, headers: [String: String]? = nil, completedCallback: @es
    let headers = ["Authorization": "TOKEN Token=\(token)"]
     
     Alamofire.request(url, headers: headers).responseJSON { response in
-      if let result = response.result.value {
-        completedCallback(JSON(result))
-      } else {
+      if response.response?.statusCode != 200 {
         failedCallback(response.response?.statusCode)
+      } else {
+        if let result = response.result.value {
+          completedCallback(JSON(result))
+        } else {
+          failedCallback(500)
+        }
       }
     }
   }
@@ -176,10 +180,14 @@ func post(_ url: String, params: [String: NSDictionary]? = nil, completedCallbac
   }
   
   Alamofire.request(url, method: HTTPMethod.post, parameters: params, encoding: URLEncoding.default, headers: headers).responseJSON { response in
-    if let result = response.result.value {
-      completedCallback(JSON(result))
-    } else {
+    if response.response?.statusCode != 200 {
       failedCallback(response.response?.statusCode)
+    } else {
+      if let result = response.result.value {
+        completedCallback(JSON(result))
+      } else {
+        failedCallback(500)
+      }
     }
   }
 }
@@ -197,14 +205,18 @@ func formPost(_ url: String, data: Data, completedCallback: @escaping (_ result:
         switch encodingResult {
         case .success(let upload, _, _):
           upload.responseJSON { response in
-            if let result = response.result.value {
-              completedCallback(JSON(result))
-            } else {
+            if response.response?.statusCode != 200 {
               failedCallback(response.response?.statusCode)
+            } else {
+              if let result = response.result.value {
+                completedCallback(JSON(result))
+              } else {
+                failedCallback(500)
+              }
             }
           }
         case .failure(_):
-          failedCallback(400)
+          failedCallback(500)
         }
       }
     )

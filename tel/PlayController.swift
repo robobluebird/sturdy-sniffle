@@ -52,6 +52,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var pieTap: UITapGestureRecognizer?
   var piePan: UIPanGestureRecognizer?
   var panStartPoint = CGPoint()
+  var audioWasPlayingWhenPanGestureBegan = false
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -311,7 +312,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       fetchChains(nil, completedCallback: { chains, amount in
         self.createPies(chains: chains, callback: nil)
       }, failedCallback: { status in
-        showAlert(context: self, message: "failed to contact the server")
+        handleErrorCode(code: status ?? -1, alertContext: self)
       });
     }, notRegisteredCallback: { status in
     })
@@ -436,10 +437,13 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
           
           chains.insert(chain, at: self.currentPieIndex)
           
-          self.createPies(chains: chains, callback: {
-            self.hideLoading()
+          self.hideLoading({
+            self.createPies(chains: chains, callback: {})
           })
         }, failedCallback: { status in
+          self.hideLoading({
+            handleErrorCode(code: status ?? -1, alertContext: self)
+          })
         })
       })
     }
@@ -482,11 +486,16 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     if pies.count == 0 {
       nothingHereLabel.isHidden = false
       view.bringSubview(toFront: nothingHereLabel)
+      playButton.isHidden = true
+      workingLabel.text = ""
+      workingLabel.isHidden = true
     } else {
       nothingHereLabel.isHidden = true
+      playButton.isHidden = false
     }
     
     for p in pies {
+      p.maybeDisable()
       piesHolder.addSubview(p)
     }
     
@@ -612,6 +621,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
           
           enabledControls = true
         }, failure: {
+          handleErrorCode(code: 437, alertContext: self)
           self.enableReloadButton()
         })
       }
@@ -694,6 +704,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
                 self.hideLoading()
               })
             }, failedCallback: { status in
+              self.hideLoading({
+                handleErrorCode(code: status ?? -1, alertContext: self)
+              })
             })
           })
         }
@@ -798,7 +811,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
         })
       }, failedCallback: { status in
         self.hideLoading({
-          showAlert(context: self, message: "failed to contact the server")
+          handleErrorCode(code: status ?? -1, alertContext: self)
         })
       })
     })
@@ -812,7 +825,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
         })
       }, failedCallback: { status in
         self.hideLoading({
-          showAlert(context: self, message: "failed to contact the server")
+          handleErrorCode(code: status ?? -1, alertContext: self)
         })
       });
     })
@@ -833,18 +846,35 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func handlePieTap(gestureRecognizer: UITapGestureRecognizer) {
     let point = gestureRecognizer.location(in: pies[currentPieIndex])
     let time = pies[currentPieIndex].startTimeForPiePieceCoveringPoint(point: point)
+    var wasPlaying = false
+    
+    if audio!.isPlaying {
+      audio!.pause()
+      wasPlaying = true
+    }
     
     audio!.currentTime = TimeInterval(time)
+    setPlayProgress()
     
-    if !audio!.isPlaying {
-      setPlayProgress()
+    if wasPlaying {
+      audio!.play()
     }
   }
   
   func handlePiePan(gestureRecognizer: UIPanGestureRecognizer) {
     if audio != nil {
       if gestureRecognizer.state == .began {
+        if audio!.isPlaying {
+          audioWasPlayingWhenPanGestureBegan = true
+          audio!.pause()
+        }
+        
         panStartPoint = gestureRecognizer.location(in: view)
+      } else if gestureRecognizer.state == .ended {
+        if audioWasPlayingWhenPanGestureBegan {
+          audio!.play()
+          audioWasPlayingWhenPanGestureBegan = false
+        }
       } else {
         let newPoint = gestureRecognizer.location(in: view)
         let startPointAngle = atan2(panStartPoint.y - screenCenterY, panStartPoint.x - screenCenterX)
@@ -880,6 +910,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
             })
           }
         }, failedCallback: { status in
+          self.hideLoading({
+            handleErrorCode(code: status ?? -1, alertContext: self)
+          })
         })
       })
     }
@@ -1022,7 +1055,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     if time != nil {
       let angle = CGFloat(percentDivisor * time!)
-      updateProgress(degreeAngle: angle)
       pies[currentPieIndex].rotateTo(degreeAngle: angle)
     }
   }

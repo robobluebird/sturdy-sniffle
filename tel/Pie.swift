@@ -179,4 +179,14 @@ class Pie: UIView {
     isUserInteractionEnabled = false
     enabled = false
   }
+  
+  func maybeDisable() {
+    if chain != nil && (chain!.url == nil || chain!.url == "") {
+      bringSubview(toFront: processingLabel)
+      processingLabel.isHidden = false
+      piePieces.forEach({ piece in piece.piece.opacity = 0.5 })
+      isUserInteractionEnabled = false
+      enabled = false
+    }
+  }
 }
