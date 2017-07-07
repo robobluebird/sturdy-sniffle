@@ -56,51 +56,8 @@
                     <view key="view" contentMode="scaleToFill" id="cLW-DW-qhW">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WXF-Fw-rnZ">
-                                <rect key="frame" x="137" y="283" width="100" height="100"/>
-                                <color key="backgroundColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="100" id="0b1-id-6FV"/>
-                                    <constraint firstAttribute="width" constant="100" id="LDU-3G-RgS"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kOg-nl-IZg">
-                                <rect key="frame" x="145" y="291" width="84" height="84"/>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="84" id="Jf3-OX-vSL"/>
-                                    <constraint firstAttribute="width" constant="84" id="a44-Hq-ekG"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bl6-lR-039">
-                                <rect key="frame" x="16" y="223" width="343" height="0.0"/>
-                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" id="8Gk-89-lpd"/>
-                                </constraints>
-                            </view>
-                        </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                        <constraints>
-                            <constraint firstItem="bl6-lR-039" firstAttribute="trailing" secondItem="cLW-DW-qhW" secondAttribute="trailingMargin" id="3M1-tE-xKI"/>
-                            <constraint firstItem="WXF-Fw-rnZ" firstAttribute="centerY" secondItem="cLW-DW-qhW" secondAttribute="centerY" id="6NG-jv-kPd"/>
-                            <constraint firstItem="kOg-nl-IZg" firstAttribute="centerY" secondItem="cLW-DW-qhW" secondAttribute="centerY" id="72k-N3-NHB"/>
-                            <constraint firstItem="kOg-nl-IZg" firstAttribute="centerX" secondItem="cLW-DW-qhW" secondAttribute="centerX" id="81M-tm-fV1"/>
-                            <constraint firstItem="WXF-Fw-rnZ" firstAttribute="top" secondItem="bl6-lR-039" secondAttribute="bottom" constant="60" id="AtC-51-86c"/>
-                            <constraint firstItem="WXF-Fw-rnZ" firstAttribute="centerX" secondItem="cLW-DW-qhW" secondAttribute="centerX" id="CtW-yz-bal"/>
-                            <constraint firstItem="bl6-lR-039" firstAttribute="leading" secondItem="cLW-DW-qhW" secondAttribute="leadingMargin" id="px0-Zd-rQn"/>
-                        </constraints>
                     </view>
-                    <connections>
-                        <outlet property="innerRecordButton" destination="kOg-nl-IZg" id="2oQ-pI-ge1"/>
-                        <outlet property="innerRecordButtonHeight" destination="Jf3-OX-vSL" id="MUm-SN-lAw"/>
-                        <outlet property="innerRecordButtonWidth" destination="a44-Hq-ekG" id="Ivd-gH-3gu"/>
-                        <outlet property="meterBarsHolder" destination="bl6-lR-039" id="XPf-zJ-rxe"/>
-                        <outlet property="outerRecordButton" destination="WXF-Fw-rnZ" id="Q5F-xI-Sc6"/>
-                        <outlet property="outerRecordButtonHeight" destination="0b1-id-6FV" id="eJD-8i-ffB"/>
-                        <outlet property="outerRecordButtonWidth" destination="LDU-3G-RgS" id="azr-Sv-vlt"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="yZb-fZ-gQC" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

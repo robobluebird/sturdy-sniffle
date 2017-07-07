@@ -10,14 +10,18 @@ import UIKit
 import AVFoundation
 
 class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPlayerDelegate, UIGestureRecognizerDelegate {
-  @IBOutlet var outerRecordButton: UIView!
-  @IBOutlet var innerRecordButton: UIView!
-  @IBOutlet var meterBarsHolder: UIView!
+  let totalWidth = UIScreen.main.bounds.width
+  let totalHeight = UIScreen.main.bounds.height
+  let screenCenterX = UIScreen.main.bounds.width / 2
+  let screenCenterY = UIScreen.main.bounds.height / 2
+  let pieSize = UIScreen.main.bounds.width / 2
   
-  @IBOutlet var outerRecordButtonHeight: NSLayoutConstraint!
-  @IBOutlet var outerRecordButtonWidth: NSLayoutConstraint!
-  @IBOutlet var innerRecordButtonHeight: NSLayoutConstraint!
-  @IBOutlet var innerRecordButtonWidth: NSLayoutConstraint!
+  var outerRecordButton = Circle()
+  var outerRecordCover = Circle()
+  var innerRecordButton = Circle()
+  var coverLayer = CAShapeLayer()
+  var dotsHolder = Circle()
+  var dotSize = CGFloat(0)
   
   var recorder: AVAudioRecorder?
   var player: AVAudioPlayer?
@@ -29,15 +33,8 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   var inactiveColor: UIColor?
   var creationCallback: ((Data) -> Void)?
   var additionCallback: ((Data, Chain) -> Void)?
-  
-  let barHolderHeight: CGFloat = 0.0
-  var meterBarWidth: CGFloat = 0.0
-  var meterBarHolderWidth: CGFloat = 0.0
-  var meterBarLeftOffset: CGFloat = 0.0
-  var widthDivisor: CGFloat?
-  
-  var playheadLeftOffset: CGFloat = 0.0
-  let playhead = UIView(frame: CGRect(x: 0.0, y: -10.0, width: 2.0, height: 20.0))
+
+  var percentDivisor = 0.0
   
   var resetRecorder = false
   let recordTime = TimeInterval(15.0)
@@ -53,27 +50,59 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   override func viewDidLoad() {
     super.viewDidLoad()
     
-    inactiveColor = innerRecordButton.backgroundColor
+    // dotSize
+    dotSize = pieSize / 20
+    
+    // percentDivisor
+    percentDivisor = 360 / 30
     
     // make it a circle
-    outerRecordButtonHeight.constant = buttonSize
-    outerRecordButtonWidth.constant = buttonSize
-    innerRecordButtonHeight.constant = buttonSize * 0.8
-    innerRecordButtonWidth.constant = buttonSize * 0.8
-    outerRecordButton.layer.cornerRadius = buttonSize / 2
-    innerRecordButton.layer.cornerRadius = buttonSize * 0.8 / 2
+    let origin = CGPoint(x: screenCenterX - pieSize / 2, y: screenCenterY - pieSize / 2)
+    let size = CGSize(width: pieSize, height: pieSize)
+    let smallerOrigin = CGPoint(x: screenCenterX - (pieSize * 0.8) / 2, y: screenCenterY - (pieSize * 0.8) / 2)
+    let smallerSize = CGSize(width: pieSize * 0.8, height: pieSize * 0.8)
     
-    // meter
-    meterBarHolderWidth = UIScreen.main.bounds.width * 0.92
-    meterBarWidth = meterBarHolderWidth / 150.0
+    outerRecordButton = Circle(frame: CGRect(origin: origin, size: size))
+    outerRecordButton.backgroundColor = .red
     
-    lpgr = UILongPressGestureRecognizer(target: self, action: #selector(RecordingController.handleLongPress(gestureReconizer:)))
+    outerRecordCover = Circle(frame: CGRect(origin: origin, size: size))
+    outerRecordCover.backgroundColor = .clear
+    
+    dotsHolder = Circle(frame: CGRect(origin: origin, size: size))
+    dotsHolder.backgroundColor = .clear
+  
+    for index in 0...19 {
+      let radians = (CGFloat(18 * index) / 180) * CGFloat(M_PI)
+      let x = (pieSize / 2) + (pieSize / 2 - dotSize) * cos(radians) - (dotSize / 2)
+      let y = (pieSize / 2) + (pieSize / 2 - dotSize) * sin(radians) - (dotSize / 2)
+      let origin = CGPoint(x: x, y: y)
+      let size = CGSize(width: dotSize, height: dotSize)
+      let circle = Circle(frame: CGRect(origin: origin, size: size))
+      circle.backgroundColor = .black
+      dotsHolder.addSubview(circle)
+    }
+    
+    coverLayer.fillColor = UIColor.red.cgColor
+    coverLayer.strokeColor = UIColor.red.cgColor
+    coverLayer.isHidden = true
+    dotsHolder.isHidden = true
+    outerRecordCover.layer.addSublayer(coverLayer)
+    
+    innerRecordButton = Circle(frame: CGRect(origin: smallerOrigin, size: smallerSize))
+    innerRecordButton.backgroundColor = .white
+    inactiveColor = .white
+    
+    lpgr = UILongPressGestureRecognizer(target: self, action: #selector(RecordingController.handleRecordButtonLongPress(gestureReconizer:)))
     lpgr!.minimumPressDuration = 0.0
     lpgr!.delaysTouchesBegan = true
     innerRecordButton.addGestureRecognizer(lpgr!)
     
-    playhead.backgroundColor = UIColor.black
+    view.addSubview(outerRecordButton)
+    view.addSubview(dotsHolder)
+    view.addSubview(outerRecordCover)
+    view.addSubview(innerRecordButton)
     
+    // other setup
     setActions()
     disableGoButton()
     disableClearButton()
@@ -158,7 +187,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
 
   // MARK: buttons
   
-  func handleLongPress(gestureReconizer: UILongPressGestureRecognizer) {
+  func handleRecordButtonLongPress(gestureReconizer: UILongPressGestureRecognizer) {
     if gestureReconizer.state == .began {
       startRecording()
     } else if gestureReconizer.state == .ended {
@@ -229,33 +258,45 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     }
   }
   
+  func drawCover(angle: CGFloat) {
+    let startAngle = CGFloat(0)
+    
+    let path = UIBezierPath(
+      circleSegmentCenter: CGPoint(x: pieSize / 2, y: pieSize / 2),
+      radius: pieSize / 2,
+      startAngle: startAngle,
+      endAngle: CGFloat(angle)
+    )
+    
+    coverLayer.path = path.cgPath
+  }
+  
   func startRecording() {
     player?.stop()
     timer?.invalidate()
     player = nil
     
-    hidePlayhead()
-    
     if resetRecorder {
       recordedTime = 0.0
-      meterBarLeftOffset = 0.0
-      meterBarsHolder.subviews.forEach({ $0.removeFromSuperview() })
+      outerRecordButton.subviews.forEach({ $0.removeFromSuperview() })
+      setPlayProgress(zero: true)
       resetRecorder = false
     }
     
+    setPlayProgress(zero: true)
+    coverLayer.isHidden = false
+    dotsHolder.isHidden = false
+    outerRecordButton.isHidden = true
     innerRecordButton.backgroundColor = UIColor.red
     recorder!.record()
-    
-    if recorder!.isRecording {
-      timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(RecordingController.updateRecording), userInfo: nil, repeats: true)
-    }
+    timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(RecordingController.updateRecording), userInfo: nil, repeats: true)
   }
   
   func stopRecording() {
     innerRecordButton.backgroundColor = inactiveColor
     recordedTime += recorder!.currentTime
     recorder!.stop()
-    timer?.invalidate()
+    timer!.invalidate()
     
     do {
       if FileManager.default.fileExists(atPath: currentPath()!.relativePath) {
@@ -279,10 +320,13 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     timer?.invalidate()
     disableGoButton()
     disableClearButton()
+    coverLayer.isHidden = true
+    dotsHolder.isHidden = true
+    outerRecordButton.isHidden = false
     
     recordedTime = 0.0
-    meterBarLeftOffset = 0.0
-    meterBarsHolder.subviews.forEach({ $0.removeFromSuperview() })
+    outerRecordButton.subviews.forEach({ $0.removeFromSuperview() })
+    drawCover(angle: 0)
     resetRecorder = false
     
     do {
@@ -320,7 +364,6 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
       exportSession!.outputURL = exportPath()!
       exportSession!.outputFileType = AVFileTypeAppleM4A
       exportSession!.exportAsynchronously(completionHandler: {
-        NSLog("DUMB: \(exportSession!.error)")
         self.doSomeThings()
       })
     } catch {
@@ -346,32 +389,17 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
       
       player!.delegate = self
       player!.prepareToPlay()
+      player!.numberOfLoops = -1
       player!.play()
       
-      if player!.isPlaying {
-        DispatchQueue.main.async {
-          self.showPlayhead()
-          self.enableGoButton()
-          
-          self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(RecordingController.updatePlayer), userInfo: nil, repeats: true)
-        }
+      DispatchQueue.main.async {
+        self.enableGoButton()
+        self.enableClearButton()
+        
+        self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(RecordingController.setPlayProgress), userInfo: nil, repeats: true)
       }
     } catch {
       NSLog("DUMB: \(error)")
-    }
-  }
-  
-  func hidePlayhead() {
-    DispatchQueue.main.async {
-      self.disableClearButton()
-      self.playhead.removeFromSuperview()
-    }
-  }
-  
-  func showPlayhead() {
-    DispatchQueue.main.async {
-      self.enableClearButton()
-      self.meterBarsHolder.addSubview(self.playhead)
     }
   }
   
@@ -410,15 +438,31 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
       }
     }
   }
-
-  func updatePlayer() {
-    if player != nil {
-      var frame = playhead.frame
-      let prct = player!.currentTime / 15.0
-      let total = meterBarHolderWidth * CGFloat(prct)
-      frame.origin.x = total
-      playhead.frame = frame
+  
+  func setPlayProgress(zero: Bool = false) {
+    var time: Double? = nil
+    
+    if zero {
+      time = 0.0
+    } else if player != nil {
+      time = player!.currentTime
     }
+    
+    if time != nil {
+      let angle = CGFloat(percentDivisor * time!)
+      outerRecordCover.rotateTo(degreeAngle: angle)
+      dotsHolder.rotateTo(degreeAngle: angle)
+    }
+  }
+  
+  func adjustAudioProgress(by time: Double) {
+    var newTime = player!.currentTime + time
+    
+    if newTime < 0 {
+      newTime = player!.duration + newTime
+    }
+    
+    player!.currentTime = newTime
   }
   
   func updateRecording() {
@@ -426,56 +470,13 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
       stopRecording()
     }
     
-    var barHeight = CGFloat(meterBarHeight())
+    let degreeAngle = CGFloat(percentDivisor * (recordedTime + recorder!.currentTime))
     
-    if barHeight < 1.0 {
-      barHeight = 1.0
-    } else if barHeight > 50.0 {
-      barHeight = 50.0
-    }
-    
-    let meterBar = UIView(frame: CGRect(x: meterBarLeftOffset, y: barHolderHeight - barHeight, width: meterBarWidth, height: barHeight))
-    let meterBarDownward = UIView(frame: CGRect(x: meterBarLeftOffset, y: barHolderHeight, width: meterBarWidth, height: barHeight))
-    
-    meterBar.backgroundColor = UIColor.red
-    meterBarDownward.backgroundColor = UIColor.red
-    
-    meterBarsHolder.addSubview(meterBar)
-    meterBarsHolder.addSubview(meterBarDownward)
-    
-    meterBarLeftOffset += meterBarWidth
+    drawCover(angle: degreeAngle)
   }
   
   func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
     lpgr!.isEnabled = false
     lpgr!.isEnabled = true
-  }
-  
-  func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-    player.play()
-
-    if player.isPlaying {
-      self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(RecordingController.updatePlayer), userInfo: nil, repeats: true)
-    }
-  }
-  
-  func meterBarHeight() -> Float {
-    recorder!.updateMeters()
-    
-    let minDecibels: Float = -120.0
-    let decibels = recorder!.averagePower(forChannel: 0)
-    
-    if decibels < minDecibels {
-      return 0.0
-    } else if decibels >= 0.0 {
-      return 1.0
-    } else {
-      let minAmp = powf(10, 0.05 * minDecibels)
-      let inverseAmpRange = 1.0 / (1.0 - minAmp)
-      let amp = powf(10, 0.05 * decibels)
-      let adjustedAmp = (amp - minAmp) * inverseAmpRange
-      
-      return powf(adjustedAmp, 1.0) * 100.0
-    }
   }
 }

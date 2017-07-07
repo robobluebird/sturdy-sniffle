@@ -9,6 +9,8 @@
 import UIKit
 
 class Circle: UIView {
+  var currentAngle = CGFloat(0)
+  
   override init(frame: CGRect) {
     super.init(frame: frame)
     
@@ -22,5 +24,19 @@ class Circle: UIView {
   override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
     let center = CGPoint(x: bounds.size.width/2, y: bounds.size.height/2)
     return pow(center.x-point.x, 2) + pow(center.y - point.y, 2) <= pow(bounds.size.width/2, 2)
+  }
+  
+  func rotateTo(degreeAngle: CGFloat) {
+    self.currentAngle = -degreeAngle
+    rotate()
+  }
+  
+  func rotateBy(degreeAngle: CGFloat) {
+    self.currentAngle += degreeAngle
+    rotate()
+  }
+  
+  private func rotate() {
+    self.transform = CGAffineTransform(rotationAngle: self.currentAngle * CGFloat(M_PI/180))
   }
 }
