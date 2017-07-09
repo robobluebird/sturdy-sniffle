@@ -17,6 +17,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var tg: UITapGestureRecognizer?
   var lsg: UISwipeGestureRecognizer?
   var rsg: UISwipeGestureRecognizer?
+  var pblsg: UISwipeGestureRecognizer?
+  var pbrsg: UISwipeGestureRecognizer?
   var timer: Timer?
   var playingRate = 0.0
   var audio: AVAudioPlayer?
@@ -216,8 +218,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     loadingScreen.addSubview(loadingLabel)
     view.addSubview(loadingScreen)
     
-    let origin = CGPoint(x: totalWidth / 2 - (pieSize * 0.8) / 2, y: totalHeight / 2 - (pieSize * 0.8) / 2)
-    let size = CGSize(width: pieSize * 0.8, height: pieSize * 0.8)
+    let origin = CGPoint(x: totalWidth / 2 - (pieSize * 0.6) / 2, y: totalHeight / 2 - (pieSize * 0.6) / 2)
+    let size = CGSize(width: pieSize * 0.6, height: pieSize * 0.6)
     playButton = Circle(frame: CGRect(origin: origin, size: size))
     
     // reload button
@@ -274,9 +276,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     view.addSubview(workingLabel)
     
     // make the play button
-    let triangle = InterestingView(frame: CGRect(x: 0, y: 0, width: 30, height: 30), shape: Shape.play)
+    let triangle = InterestingView(frame: CGRect(x: 0, y: 0, width: pieSize * 0.25, height: pieSize * 0.25), shape: Shape.play)
     triangle.backgroundColor = UIColor.clear
-    playButtonGraphic = UIView(frame: CGRect(origin: CGPoint(x: pieSize / 2 - 30, y: pieSize / 2 - 30), size: CGSize(width: 30, height: 30)))
+    playButtonGraphic = UIView(frame: CGRect(origin: CGPoint(x: (pieSize * 0.6 / 2) - (pieSize * 0.25 / 2), y: (pieSize * 0.6 / 2) - (pieSize * 0.25 / 2)), size: CGSize(width: pieSize * 0.25, height: pieSize * 0.25)))
     playButtonGraphic.addSubview(triangle)
     playButtonGraphic.backgroundColor = UIColor.clear
     playButton.addSubview(playButtonGraphic)
@@ -292,10 +294,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     tg = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleTap(gestureRecognizer:)))
     
     playButton.addGestureRecognizer(tg!)
-    
-    // progress
-    progress = progressPie()
-    progress.isHidden = true
     
     // audio
     configureAudioSession()
@@ -425,6 +423,15 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     piesHolder.addGestureRecognizer(lsg!)
     piesHolder.addGestureRecognizer(rsg!)
+    
+    pblsg = UISwipeGestureRecognizer(target: self, action: #selector(PlayController.handleSwipe(gestureRecognizer:)))
+    pbrsg = UISwipeGestureRecognizer(target: self, action: #selector(PlayController.handleSwipe(gestureRecognizer:)))
+    
+    pblsg!.direction = .left
+    pbrsg!.direction = .right
+    
+    playButton.addGestureRecognizer(pblsg!)
+    playButton.addGestureRecognizer(pbrsg!)
   }
   
   func toNewRecording(sender: AnyObject) {
@@ -490,6 +497,10 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       workingLabel.text = ""
       workingLabel.isHidden = true
     } else {
+      if currentPieIndex >= pies.count {
+        currentPieIndex = pies.count - 1
+      }
+      
       nothingHereLabel.isHidden = true
       playButton.isHidden = false
     }
@@ -524,42 +535,14 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     }
   }
   
-  func progressPie() -> CAShapeLayer {
-    let radians = (-90 / 180) * CGFloat(M_PI)
-    let newX = screenCenterX + (pieSize / 2 - progressSize) * cos(radians)
-    let newY = screenCenterY + (pieSize / 2 - progressSize) * sin(radians)
-
-    let layer = CAShapeLayer()
-    
-    layer.path = UIBezierPath(arcCenter: CGPoint(x: newX, y: newY), radius: progressSize / 2, startAngle: 0, endAngle: CGFloat(2 * M_PI), clockwise: true).cgPath
-    
-    layer.strokeColor = UIColor.black.cgColor
-    layer.fillColor = UIColor.clear.cgColor
-    layer.lineWidth = 1.0
-    
-    let subLayer = CAShapeLayer()
-    
-    subLayer.path = UIBezierPath(arcCenter: CGPoint(x: newX, y: newY), radius: 3, startAngle: 0, endAngle: CGFloat(2 * M_PI), clockwise: true).cgPath
-    
-    subLayer.strokeColor = UIColor.white.cgColor
-    subLayer.fillColor = UIColor.clear.cgColor
-    subLayer.lineWidth = 1.0
-    
-    layer.addSublayer(subLayer)
-    
-    view.layer.addSublayer(layer)
-    
-    return layer
-  }
-  
   func updateProgress(degreeAngle: CGFloat) {
-    let radians = (degreeAngle - 90) * (CGFloat(M_PI) / 180)
+    let radians = (degreeAngle - 90) * (.pi / 180)
     let newX = screenCenterX + (pieSize / 2 - progressSize) * cos(radians)
     let newY = screenCenterY + (pieSize / 2 - progressSize) * sin(radians)
     
-    progress.path = UIBezierPath(arcCenter: CGPoint(x: newX, y: newY), radius: progressSize / 2, startAngle: 0, endAngle: CGFloat(2 * M_PI), clockwise: true).cgPath
+    progress.path = UIBezierPath(arcCenter: CGPoint(x: newX, y: newY), radius: progressSize / 2, startAngle: 0, endAngle: 2 * .pi, clockwise: true).cgPath
     
-    (progress.sublayers!.first as! CAShapeLayer).path = UIBezierPath(arcCenter: CGPoint(x: newX, y: newY), radius: 3, startAngle: 0, endAngle: CGFloat(2 * M_PI), clockwise: true).cgPath
+    (progress.sublayers!.first as! CAShapeLayer).path = UIBezierPath(arcCenter: CGPoint(x: newX, y: newY), radius: 3, startAngle: 0, endAngle: 2 * .pi, clockwise: true).cgPath
   }
   
   func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
@@ -879,7 +862,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
         let newPoint = gestureRecognizer.location(in: view)
         let startPointAngle = atan2(panStartPoint.y - screenCenterY, panStartPoint.x - screenCenterX)
         let newPointAngle = atan2(newPoint.y - screenCenterY, newPoint.x - screenCenterX)
-        let angle = (newPointAngle - startPointAngle) * 180 / CGFloat(M_PI)
+        let angle = (newPointAngle - startPointAngle) * 180 / .pi
         
         pies[currentPieIndex].rotateBy(degreeAngle: angle)
         adjustAudioProgress(by: -(Double(angle / 360) * audio!.duration))
@@ -936,9 +919,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       }
     }
     
+    self.unloadChain()
+    
     if newX != 0.0 {
-      self.unloadChain()
-      
       currentPieIndex += pieChange
       
       UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseOut, animations: {
@@ -950,8 +933,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       })
     } else {
       let bounceValue = gestureRecognizer.direction == .left ? -(pieSize / 4) : pieSize / 4
-      
-      self.disableControls()
       
       UIView.animate(withDuration: 0.10, delay: 0.0, options: .curveLinear, animations: {
         for view in self.piesHolder.subviews {
@@ -1077,8 +1058,10 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       submitCodeButton.layer.opacity = 1.0
       submitCodeButton.isUserInteractionEnabled = true
     } else {
-      submitCodeButton.layer.opacity = 0.5
-      submitCodeButton.isUserInteractionEnabled = false
+      if newLength < 4 {
+        submitCodeButton.layer.opacity = 0.5
+        submitCodeButton.isUserInteractionEnabled = false
+      }
     }
     
     return newLength <= 4

@@ -54,13 +54,13 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     dotSize = pieSize / 20
     
     // percentDivisor
-    percentDivisor = 360 / 30
+    percentDivisor = 360 / recordTime
     
     // make it a circle
     let origin = CGPoint(x: screenCenterX - pieSize / 2, y: screenCenterY - pieSize / 2)
     let size = CGSize(width: pieSize, height: pieSize)
-    let smallerOrigin = CGPoint(x: screenCenterX - (pieSize * 0.8) / 2, y: screenCenterY - (pieSize * 0.8) / 2)
-    let smallerSize = CGSize(width: pieSize * 0.8, height: pieSize * 0.8)
+    let smallerOrigin = CGPoint(x: screenCenterX - (pieSize * 0.6) / 2, y: screenCenterY - (pieSize * 0.6) / 2)
+    let smallerSize = CGSize(width: pieSize * 0.6, height: pieSize * 0.6)
     
     outerRecordButton = Circle(frame: CGRect(origin: origin, size: size))
     outerRecordButton.backgroundColor = .red
@@ -72,9 +72,9 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     dotsHolder.backgroundColor = .clear
   
     for index in 0...19 {
-      let radians = (CGFloat(18 * index) / 180) * CGFloat(M_PI)
-      let x = (pieSize / 2) + (pieSize / 2 - dotSize) * cos(radians) - (dotSize / 2)
-      let y = (pieSize / 2) + (pieSize / 2 - dotSize) * sin(radians) - (dotSize / 2)
+      let radians = (CGFloat(18 * index) / 180) * .pi
+      let x = (pieSize / 2) + (pieSize / 2 * 0.9 - dotSize) * cos(radians) - (dotSize / 2)
+      let y = (pieSize / 2) + (pieSize / 2 * 0.9 - dotSize) * sin(radians) - (dotSize / 2)
       let origin = CGPoint(x: x, y: y)
       let size = CGSize(width: dotSize, height: dotSize)
       let circle = Circle(frame: CGRect(origin: origin, size: size))
@@ -83,7 +83,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     }
     
     coverLayer.fillColor = UIColor.red.cgColor
-    coverLayer.strokeColor = UIColor.red.cgColor
+    coverLayer.strokeColor = UIColor.white.cgColor
     coverLayer.isHidden = true
     dotsHolder.isHidden = true
     outerRecordCover.layer.addSublayer(coverLayer)
@@ -147,16 +147,14 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   func configureAudioSession() {
     let session = AVAudioSession.sharedInstance()
     
-    do {
-      try session.setCategory(AVAudioSessionCategoryPlayAndRecord, with: .defaultToSpeaker)
-      
-      session.requestRecordPermission { result in
+    session.requestRecordPermission { result in
+      do {
+        try session.setCategory(AVAudioSessionCategoryPlayAndRecord, with: .defaultToSpeaker)
+        try session.setActive(true)
         self.enableRecorder()
+      } catch {
+        NSLog("\(error)")
       }
-      
-      try session.setActive(true)
-    } catch {
-      NSLog("\(error)")
     }
   }
   

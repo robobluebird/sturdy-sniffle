@@ -11,7 +11,23 @@ import Alamofire
 import SwiftyJSON
 
 func constructUrl(_ tail: String) -> String {
-  return "http://localhost:4567/\(tail)"
+  return "https://sleepy-atoll-82032.herokuapp.com/\(tail)" // "http://localhost:4567/\(tail)"
+}
+
+func urlRequest(urlString: String) -> URLRequest? {
+  if let url = URL(string: urlString) {
+    var request = URLRequest(url: url, cachePolicy: .reloadIgnoringCacheData, timeoutInterval: 10)
+    
+    if let token = token() {
+      request.addValue("TOKEN Token=\(token)", forHTTPHeaderField: "Authorization")
+      
+      return request
+    } else {
+      return nil
+    }
+  } else {
+    return nil
+  }
 }
 
 func requestTemporaryToken(completedCallback: @escaping (String) -> Void, failedCallback: @escaping (Int?) -> Void) {
@@ -84,8 +100,14 @@ func fetchSounds(chainId: String, completedCallback: @escaping ([Sound]) -> Void
 
 func fetchChainByCode(code: String, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
   get(constructUrl("codes/\(code)/chain"), completedCallback: { result in
-    if let chain = Chain(json: result["chain"]) {
-      completedCallback(chain)
+    if result["chain"] != JSON.null {
+      if let chain = Chain(json: result["chain"]) {
+        completedCallback(chain)
+      } else {
+        failedCallback(500)
+      }
+    } else {
+      failedCallback(681)
     }
   }, failedCallback: { status in
     failedCallback(status)
@@ -173,6 +195,7 @@ func get(_ url: String, headers: [String: String]? = nil, completedCallback: @es
 }
 
 func post(_ url: String, params: [String: NSDictionary]? = nil, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  
   var headers = [String: String]()
   
   if let token = token() {

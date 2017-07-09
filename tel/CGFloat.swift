@@ -10,7 +10,7 @@ import UIKit
 
 extension CGFloat {
   func radians() -> CGFloat {
-    let b = CGFloat(M_PI) * ((self - 90) / 180)
+    let b = .pi * ((self - 90) / 180)
     return b
   }
 }

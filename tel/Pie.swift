@@ -27,7 +27,7 @@ class Pie: UIView {
     centerX = bounds.width / 2.0
     centerY = bounds.height / 2.0
     outerDiameter = size
-    innerDiameter = size * 0.8
+    innerDiameter = size * 0.6
     
     backgroundColor = UIColor.white
     layer.cornerRadius = frame.width / 2
@@ -67,7 +67,7 @@ class Pie: UIView {
   }
   
   private func rotate() {
-    self.transform = CGAffineTransform(rotationAngle: self.currentAngle * CGFloat(M_PI/180))
+    self.transform = CGAffineTransform(rotationAngle: self.currentAngle * (.pi / 180))
   }
   
   func coverFrame() -> CGRect {
@@ -147,7 +147,7 @@ class Pie: UIView {
   
   func startTimeForPiePieceCoveringPoint(point: CGPoint) -> Float {
     let angleInRadians = atan2(CGFloat(point.y - centerY!), CGFloat(point.x - centerX!))
-    let angleInDegrees = angleInRadians * CGFloat(180 / M_PI)
+    let angleInDegrees = angleInRadians * (180 / .pi)
     let rotatedAngleToMakeOriginAtTop = angleInDegrees + 90
     let angle = (rotatedAngleToMakeOriginAtTop + 360).truncatingRemainder(dividingBy: 360)
     

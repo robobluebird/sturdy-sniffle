@@ -13,6 +13,7 @@
 		350B80FB1DB5DCC500D4CA46 /* RecordingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350B80FA1DB5DCC500D4CA46 /* RecordingController.swift */; };
 		350DB41D1EC1FD07008802E7 /* Circle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350DB41C1EC1FD07008802E7 /* Circle.swift */; };
 		351579471EB13FEC0098F4A7 /* PlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351579461EB13FEC0098F4A7 /* PlayController.swift */; };
+		3523F5DE1F1284FF00071DDE /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3523F5DD1F1284FF00071DDE /* Reachability.swift */; };
 		35272B201DAAA18C00F66736 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35272B1F1DAAA18C00F66736 /* AppDelegate.swift */; };
 		35272B251DAAA18C00F66736 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 35272B231DAAA18C00F66736 /* Main.storyboard */; };
 		35272B281DAAA18C00F66736 /* tel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 35272B261DAAA18C00F66736 /* tel.xcdatamodeld */; };
@@ -55,6 +56,7 @@
 		350B80FA1DB5DCC500D4CA46 /* RecordingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordingController.swift; sourceTree = "<group>"; };
 		350DB41C1EC1FD07008802E7 /* Circle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Circle.swift; sourceTree = "<group>"; };
 		351579461EB13FEC0098F4A7 /* PlayController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayController.swift; sourceTree = "<group>"; };
+		3523F5DD1F1284FF00071DDE /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		35272B1C1DAAA18C00F66736 /* tel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		35272B1F1DAAA18C00F66736 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		35272B241DAAA18C00F66736 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -185,6 +187,7 @@
 				352892C61DAC3F47000E1E10 /* Chain.swift */,
 				352892C81DAC3F50000E1E10 /* Sound.swift */,
 				353C7E881DD658F3002E50E7 /* InterestingView.swift */,
+				3523F5DD1F1284FF00071DDE /* Reachability.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -424,6 +427,7 @@
 				3509829A1DAC43AF00B3C016 /* Utilities.swift in Sources */,
 				35272B281DAAA18C00F66736 /* tel.xcdatamodeld in Sources */,
 				3574D7B81EB63560009C5111 /* PlayButtonStateEnum.swift in Sources */,
+				3523F5DE1F1284FF00071DDE /* Reachability.swift in Sources */,
 				352892C71DAC3F47000E1E10 /* Chain.swift in Sources */,
 				3567E57A1EBF732C0098618C /* ShapeEnum.swift in Sources */,
 				350DB41D1EC1FD07008802E7 /* Circle.swift in Sources */,
@@ -590,6 +594,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = tel/tel.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = 6G3QWAB5UU;
 				INFOPLIST_FILE = tel/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -607,6 +612,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = tel/tel.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = 6G3QWAB5UU;
 				INFOPLIST_FILE = tel/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;

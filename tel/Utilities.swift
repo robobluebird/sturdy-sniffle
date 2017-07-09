@@ -69,6 +69,8 @@ func handleErrorCode(code: Int, alertContext: UIViewController?) {
     message = "we couldn't load this audio"
   case 500:
     message = "help! are you connected to the internet?"
+  case 681:
+    message = "invalid code"
   default:
     message = "so far in the weeds that we might as well give up at this point"
   }
