@@ -17,6 +17,7 @@ class Chain: NSObject {
   var code: String
   var sounds = [Sound]()
   var queuedBuildCount: Int
+  var isSaved = false
   
   override init() {
     id = ""

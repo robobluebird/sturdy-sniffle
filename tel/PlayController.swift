@@ -30,6 +30,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var piesHolder = UIView()
   var playButton = UIView()
   var playButtonGraphic = UIView()
+  var loadingBackdrop = UIView()
   var loadingScreen = UIView()
   var backdrop = UIView()
   var reloadButton = UIView()
@@ -205,7 +206,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     view.addSubview(backdrop)
     
     // loading
-    let loadingOrigin = CGPoint(x: -totalWidth, y: (totalHeight / 2) - (pieSize / 2))
+    loadingBackdrop = UIView(frame: CGRect(x: -totalWidth, y: 0, width: totalWidth, height: totalHeight))
+    loadingBackdrop.backgroundColor = .clear
+    let loadingOrigin = CGPoint(x: 0, y: (totalHeight / 2) - (pieSize / 2))
     let loadingSize = CGSize(width: totalWidth, height: coveringSize)
     loadingScreen = UIView(frame: CGRect(origin: loadingOrigin, size: loadingSize))
     loadingScreen.backgroundColor = .black
@@ -216,14 +219,15 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     loadingLabel.adjustsFontSizeToFitWidth = true
     loadingLabel.textAlignment = .center
     loadingScreen.addSubview(loadingLabel)
-    view.addSubview(loadingScreen)
+    loadingBackdrop.addSubview(loadingScreen)
+    view.addSubview(loadingBackdrop)
     
-    let origin = CGPoint(x: totalWidth / 2 - (pieSize * 0.6) / 2, y: totalHeight / 2 - (pieSize * 0.6) / 2)
-    let size = CGSize(width: pieSize * 0.6, height: pieSize * 0.6)
+    let origin = CGPoint(x: totalWidth / 2 - (pieSize * 0.75) / 2, y: totalHeight / 2 - (pieSize * 0.75) / 2)
+    let size = CGSize(width: pieSize * 0.75, height: pieSize * 0.75)
     playButton = Circle(frame: CGRect(origin: origin, size: size))
     
     // reload button
-    reloadButton = UIView(frame: CGRect(origin: CGPoint(x: screenCenterX - (pieSize / 8), y: totalHeight * 0.20), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    reloadButton = UIView(frame: CGRect(origin: CGPoint(x: totalWidth * 0.8 - pieSize / 8, y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
     let reloadLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
     reloadLabel.text = "↺"
     reloadLabel.adjustsFontSizeToFitWidth = true
@@ -234,7 +238,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     view.addSubview(reloadButton)
     
     // randomize button
-    randomizeButton = UIView(frame: CGRect(origin: CGPoint(x: (screenCenterX * 1.50) - (pieSize / 8), y: totalHeight * 0.20 - 2.5), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    randomizeButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.5) - (pieSize / 8), y: totalHeight * 0.20 - 2.5), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
     let randomizeLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
     randomizeLabel.text = "⚄"
     randomizeLabel.adjustsFontSizeToFitWidth = true
@@ -245,7 +249,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     view.addSubview(randomizeButton)
     
     // download button
-    downloadButton = UIView(frame: CGRect(origin: CGPoint(x: (screenCenterX * 1.50) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    downloadButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.4) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
     let downloadLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
     downloadLabel.text = "↓"
     downloadLabel.adjustsFontSizeToFitWidth = true
@@ -256,7 +260,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     view.addSubview(downloadButton)
     
     // link button
-    linkButton = UIView(frame: CGRect(origin: CGPoint(x: (screenCenterX * 0.5) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    linkButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.2) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
     let linkLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
     linkLabel.text = "☍"
     linkLabel.adjustsFontSizeToFitWidth = true
@@ -278,10 +282,11 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     // make the play button
     let triangle = InterestingView(frame: CGRect(x: 0, y: 0, width: pieSize * 0.25, height: pieSize * 0.25), shape: Shape.play)
     triangle.backgroundColor = UIColor.clear
-    playButtonGraphic = UIView(frame: CGRect(origin: CGPoint(x: (pieSize * 0.6 / 2) - (pieSize * 0.25 / 2), y: (pieSize * 0.6 / 2) - (pieSize * 0.25 / 2)), size: CGSize(width: pieSize * 0.25, height: pieSize * 0.25)))
+    playButtonGraphic = UIView(frame: CGRect(origin: CGPoint(x: (pieSize * 0.75 / 2) - (pieSize * 0.25 / 2), y: (pieSize * 0.75 / 2) - (pieSize * 0.25 / 2)), size: CGSize(width: pieSize * 0.25, height: pieSize * 0.25)))
     playButtonGraphic.addSubview(triangle)
     playButtonGraphic.backgroundColor = UIColor.clear
     playButton.addSubview(playButtonGraphic)
+    playButton.isHidden = true
     view.addSubview(playButton)
     
     // tap for pie
@@ -307,11 +312,15 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     configurePieHolder()
     
     register(registeredCallback: {
-      fetchChains(nil, completedCallback: { chains, amount in
-        self.createPies(chains: chains, callback: nil)
-      }, failedCallback: { status in
-        handleErrorCode(code: status ?? -1, alertContext: self)
-      });
+      if self.pies.count > 0 {
+        self.createPies(chains: self.chains(), callback: nil)
+      } else {
+        fetchRandomChains(completedCallback: { chains, amount in
+          self.createPies(chains: chains, callback: nil)
+        }, failedCallback: { status in
+          handleErrorCode(code: status ?? -1, alertContext: self)
+        });
+      }
     }, notRegisteredCallback: { status in
     })
   }
@@ -355,10 +364,10 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func showLoading(_ showCompleted: (() -> Void)? = nil) {
-    view.bringSubview(toFront: loadingScreen)
+    view.bringSubview(toFront: loadingBackdrop)
     
     UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseOut, animations: {
-      self.loadingScreen.frame.origin.x = 0
+      self.loadingBackdrop.frame.origin.x = 0
     }, completion: { completed in
       if showCompleted != nil {
         showCompleted!()
@@ -368,7 +377,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func hideLoading(_ hideCompleted: (() -> Void)? = nil) {
     UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseOut, animations: {
-      self.loadingScreen.frame.origin.x = self.loadingScreen.frame.origin.x - self.totalWidth
+      self.loadingBackdrop.frame.origin.x = self.loadingBackdrop.frame.origin.x - self.totalWidth
     }, completion: { completed in
       if hideCompleted != nil {
         hideCompleted!()
@@ -378,7 +387,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func setActions() {
     let actionSize = pieSize / 4
-    let x = (totalWidth / 2) - (actionSize / 2)
+    let x = totalWidth * 0.6 - pieSize / 8
     let y = totalHeight * 0.75
     
     // make the record button
@@ -497,10 +506,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       workingLabel.text = ""
       workingLabel.isHidden = true
     } else {
-      if currentPieIndex >= pies.count {
-        currentPieIndex = pies.count - 1
-      }
-      
       nothingHereLabel.isHidden = true
       playButton.isHidden = false
     }
@@ -508,6 +513,10 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     for p in pies {
       p.maybeDisable()
       piesHolder.addSubview(p)
+    }
+    
+    if currentPieIndex >= pies.count {
+      scrollToPie(atIndex: 0)
     }
     
     if callback != nil {
@@ -575,9 +584,12 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func unloadChain() {
     stopPlaying()
     disableControls()
-    pies[currentPieIndex].removeGestureRecognizer(pieTap!)
-    pies[currentPieIndex].removeGestureRecognizer(piePan!)
-    pies[currentPieIndex].rotateTo(degreeAngle: 0)
+    
+    if currentPieIndex < pies.count {
+      pies[currentPieIndex].removeGestureRecognizer(pieTap!)
+      pies[currentPieIndex].removeGestureRecognizer(piePan!)
+      pies[currentPieIndex].rotateTo(degreeAngle: 0)
+    }
   }
   
   func loadChain(_ callback: (() -> Void)? = nil) {
@@ -802,7 +814,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func handleRandomizeTap(gestureRecognizer: UITapGestureRecognizer) {
     showLoading({
-      fetchChains(nil, completedCallback: { chains, amount in
+      fetchRandomChains(completedCallback: { chains, amount in
         self.hideLoading({
           self.createPies(chains: chains, callback: nil)
         })

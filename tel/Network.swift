@@ -10,6 +10,18 @@ import UIKit
 import Alamofire
 import SwiftyJSON
 
+func showIndicator() {
+  DispatchQueue.main.async {
+    UIApplication.shared.isNetworkActivityIndicatorVisible = true
+  }
+}
+
+func hideIndicator() {
+  DispatchQueue.main.async {
+    UIApplication.shared.isNetworkActivityIndicatorVisible = false
+  }
+}
+
 func constructUrl(_ tail: String) -> String {
   return "https://sleepy-atoll-82032.herokuapp.com/\(tail)" // "http://localhost:4567/\(tail)"
 }
@@ -173,14 +185,35 @@ func fetchChains(_ page: Int?, completedCallback: @escaping ([Chain], Int) -> Vo
   })
 }
 
+func fetchRandomChains(completedCallback: @escaping ([Chain], Int) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  get(constructUrl("chains/random"), completedCallback: { result in
+    if let items = result["chains"].array {
+      var chains = [Chain]()
+      let pages = result["pages"].int
+      
+      for item in items {
+        chains.append(Chain(json: item)!)
+      }
+      
+      completedCallback(chains, (pages ?? 1))
+    }
+  }, failedCallback: { status in
+    failedCallback(status)
+  })
+}
+
 // MARK: get and post and form
 
 func get(_ url: String, headers: [String: String]? = nil, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping (Int?) -> Void) {
   
   if let token = token() {
-   let headers = ["Authorization": "TOKEN Token=\(token)"]
+    showIndicator()
+    
+    let headers = ["Authorization": "TOKEN Token=\(token)"]
     
     Alamofire.request(url, headers: headers).responseJSON { response in
+      hideIndicator()
+      
       if response.response?.statusCode != 200 {
         failedCallback(response.response?.statusCode)
       } else {
@@ -202,7 +235,11 @@ func post(_ url: String, params: [String: NSDictionary]? = nil, completedCallbac
     headers = ["Authorization": "TOKEN Token=\(token)"]
   }
   
+  showIndicator()
+  
   Alamofire.request(url, method: HTTPMethod.post, parameters: params, encoding: URLEncoding.default, headers: headers).responseJSON { response in
+    hideIndicator()
+    
     if response.response?.statusCode != 200 {
       failedCallback(response.response?.statusCode)
     } else {
@@ -217,6 +254,8 @@ func post(_ url: String, params: [String: NSDictionary]? = nil, completedCallbac
 
 func formPost(_ url: String, data: Data, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping (Int?) -> Void) {
   if let token = token() {
+    showIndicator()
+    
     Alamofire.upload(
       multipartFormData: { multipartFormData in
         multipartFormData.append(data, withName: "upload", fileName: createFilename("m4a"), mimeType: "audio/m4a")
@@ -225,6 +264,8 @@ func formPost(_ url: String, data: Data, completedCallback: @escaping (_ result:
       method: .post,
       headers: ["Authorization": "TOKEN Token=\(token)"],
       encodingCompletion: { encodingResult in
+        hideIndicator()
+        
         switch encodingResult {
         case .success(let upload, _, _):
           upload.responseJSON { response in

@@ -59,8 +59,8 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     // make it a circle
     let origin = CGPoint(x: screenCenterX - pieSize / 2, y: screenCenterY - pieSize / 2)
     let size = CGSize(width: pieSize, height: pieSize)
-    let smallerOrigin = CGPoint(x: screenCenterX - (pieSize * 0.6) / 2, y: screenCenterY - (pieSize * 0.6) / 2)
-    let smallerSize = CGSize(width: pieSize * 0.6, height: pieSize * 0.6)
+    let smallerOrigin = CGPoint(x: screenCenterX - (pieSize * 0.75) / 2, y: screenCenterY - (pieSize * 0.75) / 2)
+    let smallerSize = CGSize(width: pieSize * 0.75, height: pieSize * 0.75)
     
     outerRecordButton = Circle(frame: CGRect(origin: origin, size: size))
     outerRecordButton.backgroundColor = .red

@@ -10,13 +10,14 @@ import UIKit
 
 class Pie: UIView {
   var chain: Chain?
-  var progressLayer: CAShapeLayer?
-  var outerDiameter: CGFloat?
-  var innerDiameter: CGFloat?
+  var progressLayer = CAShapeLayer()
+  var outerDiameter = CGFloat(0.0)
+  var innerDiameter = CGFloat(0.0)
   var piePieces = [(sound: Sound?, startTime: Float?, piece: CAShapeLayer, startAngle: CGFloat, endAngle: CGFloat)]()
   var centerX, centerY: CGFloat?
   var enabled = true
   var processingLabel = UILabel()
+  var starLabel = UILabel()
   var currentAngle = CGFloat(0)
   
   init(chain: Chain, origin: (x: CGFloat, y: CGFloat), size: CGFloat) {
@@ -27,7 +28,7 @@ class Pie: UIView {
     centerX = bounds.width / 2.0
     centerY = bounds.height / 2.0
     outerDiameter = size
-    innerDiameter = size * 0.6
+    innerDiameter = size * 0.75
     
     backgroundColor = UIColor.white
     layer.cornerRadius = frame.width / 2
@@ -44,6 +45,15 @@ class Pie: UIView {
     
     addSubview(processingLabel)
     
+    starLabel = UILabel(frame: CGRect(x: outerDiameter * 0.85, y: -(outerDiameter * 0.1), width: outerDiameter * 0.2 , height: outerDiameter * 0.2))
+    starLabel.font = processingLabel.font.withSize(50)
+    starLabel.adjustsFontSizeToFitWidth = true
+    starLabel.numberOfLines = 0
+    starLabel.textAlignment = .center
+    setStarState()
+    
+    // addSubview(starLabel)
+    
     pieChartize()
   }
   
@@ -54,6 +64,14 @@ class Pie: UIView {
   override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
     let center = CGPoint(x: bounds.size.width/2, y: bounds.size.height/2)
     return pow(center.x-point.x, 2) + pow(center.y - point.y, 2) <= pow(bounds.size.width/2, 2)
+  }
+  
+  func setStarState() {
+    if chain!.isSaved {
+      starLabel.text = "★"
+    } else {
+      starLabel.text = "☆"
+    }
   }
   
   func rotateTo(degreeAngle: CGFloat) {
@@ -71,10 +89,10 @@ class Pie: UIView {
   }
   
   func coverFrame() -> CGRect {
-    let x = (frame.width - innerDiameter!) / 2
-    let y = (frame.height - innerDiameter!) / 2
+    let x = (frame.width - innerDiameter) / 2
+    let y = (frame.height - innerDiameter) / 2
     
-    return CGRect(x: x, y: y, width: innerDiameter!, height: innerDiameter!)
+    return CGRect(x: x, y: y, width: innerDiameter, height: innerDiameter)
   }
   
   func width() -> CGFloat {
@@ -140,7 +158,7 @@ class Pie: UIView {
     
     let pieCover = UIView(frame: coverFrame())
     pieCover.backgroundColor = UIColor.white
-    pieCover.layer.cornerRadius = innerDiameter! / 2
+    pieCover.layer.cornerRadius = innerDiameter / 2
     addSubview(pieCover)
     bringSubview(toFront: processingLabel)
   }
