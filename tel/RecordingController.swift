@@ -73,8 +73,8 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   
     for index in 0...19 {
       let radians = (CGFloat(18 * index) / 180) * .pi
-      let x = (pieSize / 2) + (pieSize / 2 * 0.9 - dotSize) * cos(radians) - (dotSize / 2)
-      let y = (pieSize / 2) + (pieSize / 2 * 0.9 - dotSize) * sin(radians) - (dotSize / 2)
+      let x = (pieSize / 2) + (pieSize / 2 * 0.95 - dotSize) * cos(radians) - (dotSize / 2)
+      let y = (pieSize / 2) + (pieSize / 2 * 0.95 - dotSize) * sin(radians) - (dotSize / 2)
       let origin = CGPoint(x: x, y: y)
       let size = CGSize(width: dotSize, height: dotSize)
       let circle = Circle(frame: CGRect(origin: origin, size: size))
@@ -149,7 +149,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     
     session.requestRecordPermission { result in
       do {
-        try session.setCategory(AVAudioSessionCategoryPlayAndRecord, with: .defaultToSpeaker)
+        try session.setCategory(AVAudioSessionCategoryPlayAndRecord, with: [.defaultToSpeaker, .mixWithOthers])
         try session.setActive(true)
         self.enableRecorder()
       } catch {

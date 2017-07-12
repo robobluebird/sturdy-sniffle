@@ -128,8 +128,12 @@ func fetchChainByCode(code: String, completedCallback: @escaping (Chain) -> Void
 
 func fetchChain(chain: Chain, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
   get(constructUrl("chains/\(chain.id)"), completedCallback: { result in
-    if let reloadedChain = Chain(json: result["chain"]) {
-      completedCallback(reloadedChain)
+    if result["chain"] != JSON.null {
+      if let reloadedChain = Chain(json: result["chain"]) {
+        completedCallback(reloadedChain)
+      }
+    } else {
+      failedCallback(392)
     }
   }, failedCallback: { status in
     failedCallback(status)

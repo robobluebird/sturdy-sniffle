@@ -36,7 +36,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var reloadButton = UIView()
   var randomizeButton = UIView()
   var downloadButton = UIView()
-  var linkButton = UIView()
+  var starButton = UIView()
+  var starLabel = UILabel()
+  var codeLabel = UILabel()
   var singleSegmentDownloadButton = UIView()
   var wholeChainDownloadButton = UIView()
   var submitCodeButton = UIView()
@@ -259,20 +261,31 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     downloadButton.addGestureRecognizer(downloadTap)
     view.addSubview(downloadButton)
     
-    // link button
-    linkButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.2) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
-    let linkLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
-    linkLabel.text = "☍"
-    linkLabel.adjustsFontSizeToFitWidth = true
-    linkLabel.font = linkLabel.font.withSize(50).italic()
-    linkButton.addSubview(linkLabel)
-    let linkTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleLinkTap(gestureRecognizer:)))
-    linkButton.addGestureRecognizer(linkTap)
-    view.addSubview(linkButton)
+    // star button
+    starButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.2) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    starLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
+    starLabel.text = "☆"
+    starLabel.textColor = hexStringToUIColor("#FFD700")
+    starLabel.adjustsFontSizeToFitWidth = true
+    starLabel.font = starLabel.font.withSize(50).italic()
+    starButton.addSubview(starLabel)
+    
+    let linkTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleStarButtonTap(gestureRecognizer:)))
+    starButton.addGestureRecognizer(linkTap)
+    view.addSubview(starButton)
+    
+    // codeLabel
+    let codeLabelTop = totalHeight * 0.75 + pieSize / 4 * 1.5
+    codeLabel = UILabel(frame: CGRect(x: 0, y: codeLabelTop, width: totalWidth, height: pieSize / 8))
+    codeLabel.numberOfLines = 0
+    codeLabel.textAlignment = .center
+    codeLabel.font = workingLabel.font.italic()
+    codeLabel.text = ""
+    view.addSubview(codeLabel)
     
     // workingLabel
-    let top = screenCenterY + (pieSize / 2)
-    workingLabel = UILabel(frame: CGRect(x: 0, y: top, width: totalWidth, height: pieSize / 8))
+    let workingLabelTop = screenCenterY + (pieSize / 2)
+    workingLabel = UILabel(frame: CGRect(x: 0, y: workingLabelTop, width: totalWidth, height: pieSize / 8))
     workingLabel.numberOfLines = 0
     workingLabel.textAlignment = .center
     workingLabel.font = workingLabel.font.italic()
@@ -573,8 +586,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     let session = AVAudioSession.sharedInstance()
     
     do {
-      try session.setCategory(AVAudioSessionCategoryPlayback, with: AVAudioSessionCategoryOptions.defaultToSpeaker)
+      try session.setCategory(AVAudioSessionCategoryPlayback, with: [.defaultToSpeaker, .mixWithOthers])
       try session.setActive(true)
+      
       UIApplication.shared.beginReceivingRemoteControlEvents()
     } catch {
       NSLog("\(error)")
@@ -584,6 +598,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func unloadChain() {
     stopPlaying()
     disableControls()
+    self.codeLabel.text = ""
     
     if currentPieIndex < pies.count {
       pies[currentPieIndex].removeGestureRecognizer(pieTap!)
@@ -612,6 +627,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
           self.pies[self.currentPieIndex].addGestureRecognizer(self.piePan!)
           self.pies[self.currentPieIndex].enable()
           self.setPlayProgress()
+          self.setStarState(chain.isSaved)
+          self.codeLabel.text = chain.code
           self.enableControls()
           
           enabledControls = true
@@ -639,6 +656,14 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     if callback != nil {
       callback!()
+    }
+  }
+  
+  func setStarState(_ activated: Bool = false) {
+    if activated {
+      starLabel.text = "★"
+    } else {
+      starLabel.text = "☆"
     }
   }
   
@@ -730,8 +755,19 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     if let sound = soundForCurrentPlayTime() {
       Alamofire.request(sound.url).responseData(completionHandler: { dataResponse in
         if let data = dataResponse.data {
-          let av = UIActivityViewController(activityItems: [data], applicationActivities: nil)
-          self.present(av, animated: true, completion: nil)
+          if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            if let filename = sound.url.components(separatedBy: "/").last {
+              let path = dir.appendingPathComponent(filename)
+              
+              do {
+                try data.write(to: path)
+                let av = UIActivityViewController(activityItems: [path], applicationActivities: nil)
+                self.present(av, animated: true, completion: nil)
+              } catch {
+                NSLog("Error getting data ready to share (single segment): \(error)")
+              }
+            }
+          }
         }
       })
     }
@@ -740,8 +776,19 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func handleWholeChainButtonTap(gestureRecognizer: UITapGestureRecognizer) {
     if audio != nil {
       if let data = audio!.data {
-        let av = UIActivityViewController(activityItems: [data], applicationActivities: nil)
-        self.present(av, animated: true, completion: nil)
+        if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+          if let filename = pies[currentPieIndex].chain!.url!.components(separatedBy: "/").last {
+            let path = dir.appendingPathComponent(filename)
+            
+            do {
+              try data.write(to: path)
+              let av = UIActivityViewController(activityItems: [path], applicationActivities: nil)
+              self.present(av, animated: true, completion: nil)
+            } catch {
+              NSLog("Error getting data ready to share (full chain): \(error)")
+            }
+          }
+        }
       }
     }
   }
@@ -806,7 +853,17 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
         })
       }, failedCallback: { status in
         self.hideLoading({
-          handleErrorCode(code: status ?? -1, alertContext: self)
+          if status == 392 {
+            var chains = self.chains()
+            
+            chains.remove(at: self.currentPieIndex)
+            
+            self.createPies(chains: chains, callback: {
+              self.setPlayProgress(zero: true)
+            })
+          } else {
+            handleErrorCode(code: status ?? -1, alertContext: self)
+          }
         })
       })
     })
@@ -830,12 +887,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     showDownloadChooser()
   }
   
-  func handleLinkTap(gestureRecognizer: UITapGestureRecognizer) {
-    textField.isUserInteractionEnabled = false
-    textField.text = pies[currentPieIndex].chain!.code
-    submitCodeButton.isHidden = true
-    submitCodeButton.isUserInteractionEnabled = false
-    showCodeInput()
+  func handleStarButtonTap(gestureRecognizer: UITapGestureRecognizer) {
   }
   
   func handlePieTap(gestureRecognizer: UITapGestureRecognizer) {
@@ -912,7 +964,11 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       })
     }
     
-    self.navigationController!.present(recorder, animated: true, completion: {})
+    self.navigationController!.present(recorder, animated: true, completion: {
+      if self.audio != nil && self.audio!.isPlaying {
+        self.stopPlaying()
+      }
+    })
   }
   
   func handleSwipe(gestureRecognizer: UISwipeGestureRecognizer) {
@@ -977,13 +1033,13 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     playButton.backgroundColor = .white
     record.layer.opacity = 1.0
     playButton.layer.opacity = 1.0
-    linkButton.layer.opacity = 1.0
+    starButton.layer.opacity = 1.0
     reloadButton.layer.opacity = 1.0
     downloadButton.layer.opacity = 1.0
     randomizeButton.layer.opacity = 1.0
     record.isUserInteractionEnabled = true
     playButton.isUserInteractionEnabled = true
-    linkButton.isUserInteractionEnabled = true
+    starButton.isUserInteractionEnabled = true
     reloadButton.isUserInteractionEnabled = true
     downloadButton.isUserInteractionEnabled = true
     randomizeButton.isUserInteractionEnabled = true
@@ -1002,7 +1058,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     if changeOpacity {
       record.layer.opacity = 0.5
       playButton.layer.opacity = 0.5
-      linkButton.layer.opacity = 0.5
+      starButton.layer.opacity = 0.5
       reloadButton.layer.opacity = 0.5
       downloadButton.layer.opacity = 0.5
       randomizeButton.layer.opacity = 0.5
@@ -1010,7 +1066,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     record.isUserInteractionEnabled = false
     playButton.isUserInteractionEnabled = false
-    linkButton.isUserInteractionEnabled = false
+    starButton.isUserInteractionEnabled = false
     reloadButton.isUserInteractionEnabled = false
     downloadButton.isUserInteractionEnabled = false
     randomizeButton.isUserInteractionEnabled = false
@@ -1082,5 +1138,24 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func textFieldShouldReturn(_ textField: UITextField) -> Bool {
     textField.resignFirstResponder();
     return true;
+  }
+  
+  override func remoteControlReceived(with event: UIEvent?) {
+    if event != nil && event!.type == .remoteControl {
+      switch event!.subtype {
+      case .remoteControlTogglePlayPause:
+        if audio != nil {
+          if audio!.isPlaying {
+            audio!.pause()
+          } else {
+            audio!.play()
+          }
+        }
+        
+        break
+      default:
+        break
+      }
+    }
   }
 }
