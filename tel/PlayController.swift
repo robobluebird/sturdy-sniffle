@@ -10,7 +10,7 @@ import UIKit
 import AVFoundation
 import Alamofire
 
-class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate {
+class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate{
   var progress = CAShapeLayer()
   var percentDivisor = 0.0
   var lpgr: UILongPressGestureRecognizer?
@@ -35,6 +35,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var backdrop = UIView()
   var reloadButton = UIView()
   var randomizeButton = UIView()
+  // var starredButton = UIView()
   var downloadButton = UIView()
   var starButton = UIView()
   var starLabel = UILabel()
@@ -229,7 +230,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     playButton = Circle(frame: CGRect(origin: origin, size: size))
     
     // reload button
-    reloadButton = UIView(frame: CGRect(origin: CGPoint(x: totalWidth * 0.8 - pieSize / 8, y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    reloadButton = UIView(frame: CGRect(origin: CGPoint(x: totalWidth * 0.75 - pieSize / 8, y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
     let reloadLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
     reloadLabel.text = "↺"
     reloadLabel.adjustsFontSizeToFitWidth = true
@@ -240,7 +241,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     view.addSubview(reloadButton)
     
     // randomize button
-    randomizeButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.5) - (pieSize / 8), y: totalHeight * 0.20 - 2.5), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    randomizeButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.5) - (pieSize / 8), y: totalHeight * 0.20), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
     let randomizeLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
     randomizeLabel.text = "⚄"
     randomizeLabel.adjustsFontSizeToFitWidth = true
@@ -250,8 +251,19 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     randomizeButton.addGestureRecognizer(randomizeTap)
     view.addSubview(randomizeButton)
     
+    // starred button
+    //    starredButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.4) - (pieSize / 8), y: totalHeight * 0.20), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    //    let starredLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
+    //    starredLabel.text = "☆"
+    //    starredLabel.adjustsFontSizeToFitWidth = true
+    //    starredLabel.font = starredLabel.font.withSize(50)
+    //    starredButton.addSubview(starredLabel)
+    //    let starredTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleStarredTap(gestureRecognizer:)))
+    //    starredButton.addGestureRecognizer(starredTap)
+    //    view.addSubview(starredButton)
+    
     // download button
-    downloadButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.4) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    downloadButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.25) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
     let downloadLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
     downloadLabel.text = "↓"
     downloadLabel.adjustsFontSizeToFitWidth = true
@@ -262,17 +274,16 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     view.addSubview(downloadButton)
     
     // star button
-    starButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.2) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
-    starLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
-    starLabel.text = "☆"
-    starLabel.textColor = hexStringToUIColor("#FFD700")
-    starLabel.adjustsFontSizeToFitWidth = true
-    starLabel.font = starLabel.font.withSize(50).italic()
-    starButton.addSubview(starLabel)
-    
-    let linkTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleStarButtonTap(gestureRecognizer:)))
-    starButton.addGestureRecognizer(linkTap)
-    view.addSubview(starButton)
+    //    starButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.2) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
+    //    starLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
+    //    starLabel.text = "☆"
+    //    starLabel.textColor = hexStringToUIColor("#FFD700")
+    //    starLabel.adjustsFontSizeToFitWidth = true
+    //    starLabel.font = starLabel.font.withSize(50).italic()
+    //    starButton.addSubview(starLabel)
+    //    let starTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleStarButtonTap(gestureRecognizer:)))
+    //    starButton.addGestureRecognizer(starTap)
+    //    view.addSubview(starButton)
     
     // codeLabel
     let codeLabelTop = totalHeight * 0.75 + pieSize / 4 * 1.5
@@ -338,6 +349,24 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     })
   }
   
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    
+    UIApplication.shared.beginReceivingRemoteControlEvents()
+    self.becomeFirstResponder()
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    UIApplication.shared.endReceivingRemoteControlEvents()
+    self.resignFirstResponder()
+    
+    super.viewWillDisappear(animated)
+  }
+  
+  override var canBecomeFirstResponder : Bool {
+    return true
+  }
+  
   override func didReceiveMemoryWarning() {
     super.didReceiveMemoryWarning()
   }
@@ -400,7 +429,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func setActions() {
     let actionSize = pieSize / 4
-    let x = totalWidth * 0.6 - pieSize / 8
+    let x = totalWidth * 0.5 - pieSize / 8
     let y = totalHeight * 0.75
     
     // make the record button
@@ -588,8 +617,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     do {
       try session.setCategory(AVAudioSessionCategoryPlayback, with: [.defaultToSpeaker, .mixWithOthers])
       try session.setActive(true)
-      
-      UIApplication.shared.beginReceivingRemoteControlEvents()
     } catch {
       NSLog("\(error)")
     }
@@ -612,12 +639,16 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     if pies.count - 1 < currentPieIndex {
       enableReloadButton()
+      self.setStarState(false)
+      self.codeLabel.text = ""
       return
     }
     
     if let chain = pies[currentPieIndex].chain {
       if chain.url == nil || chain.url! == "" {
         self.disableControls()
+        self.setStarState(chain.isStarred)
+        self.codeLabel.text = chain.code
         self.pies[self.currentPieIndex].disable()
       } else {
         let url = "https://s3.us-east-2.amazonaws.com/tel-serv/" + chain.url!
@@ -627,7 +658,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
           self.pies[self.currentPieIndex].addGestureRecognizer(self.piePan!)
           self.pies[self.currentPieIndex].enable()
           self.setPlayProgress()
-          self.setStarState(chain.isSaved)
+          self.setStarState(chain.isStarred)
           self.codeLabel.text = chain.code
           self.enableControls()
           
@@ -647,6 +678,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       }
     } else {
       self.disableControls()
+      self.setStarState(false)
+      self.codeLabel.text = ""
       self.pies[self.currentPieIndex].disable()
     }
     
@@ -753,7 +786,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func handleSingleSegmentButtonTap(gestureRecognizer: UITapGestureRecognizer) {
     if let sound = soundForCurrentPlayTime() {
-      Alamofire.request(sound.url).responseData(completionHandler: { dataResponse in
+      let url = "https://s3.us-east-2.amazonaws.com/tel-serv/" + sound.url
+      
+      Alamofire.request(url).responseData(completionHandler: { dataResponse in
         if let data = dataResponse.data {
           if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             if let filename = sound.url.components(separatedBy: "/").last {
@@ -883,11 +918,33 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     })
   }
   
+  func handleStarredTap(gestureRecognizer: UITapGestureRecognizer) {
+    showLoading({
+      fetchStarred(completedCallback: { chains in
+        self.hideLoading({
+          self.createPies(chains: chains, callback: nil)
+        })
+      }, failedCallback: { status in
+        self.hideLoading({
+          handleErrorCode(code: status ?? -1, alertContext: self)
+        })
+      })
+    })
+  }
+  
   func handleDownloadTap(gestureRecognizer: UITapGestureRecognizer) {
     showDownloadChooser()
   }
   
   func handleStarButtonTap(gestureRecognizer: UITapGestureRecognizer) {
+    if pies[currentPieIndex].chain!.url != nil {
+      toggleStarred(chain: pies[currentPieIndex].chain!, completedCallback: { chain in
+        self.pies[self.currentPieIndex].chain = chain
+        self.setStarState(chain.isStarred)
+      }, failedCallback: { status in
+        handleErrorCode(code: status ?? -1, alertContext: self)
+      })
+    }
   }
   
   func handlePieTap(gestureRecognizer: UITapGestureRecognizer) {
@@ -1146,12 +1203,14 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       case .remoteControlTogglePlayPause:
         if audio != nil {
           if audio!.isPlaying {
-            audio!.pause()
+            stopPlaying()
           } else {
-            audio!.play()
+            startPlaying()
           }
         }
         
+        break
+      case .remoteControlNextTrack:
         break
       default:
         break

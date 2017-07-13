@@ -23,7 +23,7 @@ func hideIndicator() {
 }
 
 func constructUrl(_ tail: String) -> String {
-  return "https://sleepy-atoll-82032.herokuapp.com/\(tail)" // "http://localhost:4567/\(tail)"
+  return "http://localhost:4567/\(tail)" // "https://sleepy-atoll-82032.herokuapp.com/\(tail)"
 }
 
 func urlRequest(urlString: String) -> URLRequest? {
@@ -55,7 +55,7 @@ func requestTemporaryToken(completedCallback: @escaping (String) -> Void, failed
 }
 
 func submitTemporaryToken(token: String, completedCallback: @escaping (String) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  post(constructUrl("access_tokens"), params: ["access_token": ["token": token]], completedCallback: { result in
+  post(constructUrl("access_tokens"), params: ["token": token], completedCallback: { result in
     if let token = result["token"].string {
       completedCallback(token)
     } else {
@@ -86,9 +86,11 @@ func createSound(data: Data, chainId: String, completedCallback: @escaping (Chai
   })
 }
 
-func toggleSound(soundId: String, chainId: String, direction: String, completedCallback: @escaping (Bool) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  post(constructUrl("chains/\(chainId)/sounds/\(soundId)/toggle"), params: ["sound": ["direction": direction]], completedCallback: { result in
-    completedCallback(result["result"].boolValue)
+func toggleSound(soundId: String, chainId: String, direction: String, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  post(constructUrl("chains/\(chainId)/sounds/\(soundId)/toggle"), params: nil, completedCallback: { result in
+    if result["chain"] != JSON.null {
+      completedCallback(Chain(json: result["chain"])!)
+    }
   }, failedCallback: { status in
     failedCallback(status)
   })
@@ -139,6 +141,39 @@ func fetchChain(chain: Chain, completedCallback: @escaping (Chain) -> Void, fail
     failedCallback(status)
   })
 }
+
+func toggleStarred(chain: Chain, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  post(constructUrl("starred"), params: ["chain_id": chain.id], completedCallback: { result in
+    if result["chain"] != JSON.null {
+      if let chain = Chain(json: result["chain"]) {
+        completedCallback(chain)
+      } else {
+        failedCallback(500)
+      }
+    } else {
+      failedCallback(681)
+    }
+  }, failedCallback: { status in
+    failedCallback(status)
+  })
+}
+
+func fetchStarred(completedCallback: @escaping ([Chain]) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  get(constructUrl("starred"), completedCallback: { result in
+    if let items = result["chains"].array {
+      var chains = [Chain]()
+      
+      for item in items {
+        chains.append(Chain(json: item)!)
+      }
+      
+      completedCallback(chains)
+    }
+  }, failedCallback: { status in
+    failedCallback(status)
+  })
+}
+
 
 func reloadChains(chains: [Chain], completedCallback: @escaping ([Chain]) -> Void, failedCallback: @escaping (Int?) -> Void) {
   var url = "chains"
@@ -231,7 +266,7 @@ func get(_ url: String, headers: [String: String]? = nil, completedCallback: @es
   }
 }
 
-func post(_ url: String, params: [String: NSDictionary]? = nil, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping (Int?) -> Void) {
+func post(_ url: String, params: [String: String]? = nil, completedCallback: @escaping (_ result: JSON) -> Void, failedCallback: @escaping (Int?) -> Void) {
   
   var headers = [String: String]()
   

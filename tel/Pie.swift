@@ -67,7 +67,7 @@ class Pie: UIView {
   }
   
   func setStarState() {
-    if chain!.isSaved {
+    if chain!.isStarred {
       starLabel.text = "★"
     } else {
       starLabel.text = "☆"

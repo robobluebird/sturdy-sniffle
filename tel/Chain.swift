@@ -17,7 +17,7 @@ class Chain: NSObject {
   var code: String
   var sounds = [Sound]()
   var queuedBuildCount: Int
-  var isSaved = false
+  var isStarred: Bool
   
   override init() {
     id = ""
@@ -26,15 +26,17 @@ class Chain: NSObject {
     code = ""
     duration = 0.0
     queuedBuildCount = 0
+    isStarred = false
   }
   
   init?(json: JSON) {
-    id = json["id"].string!
+    id = json["id"].stringValue
     text = json["description"].string ?? ""
     url = json["url"].string ?? ""
-    code = json["code"].string!
+    code = json["code"].stringValue
     duration = json["duration"].float ?? 0.0
     queuedBuildCount = json["queued_build_count"].int ?? 0
+    isStarred = json["starred"].boolValue
     sounds = json["sounds"].array!.map { item in Sound(json: item)! }
   }
   
