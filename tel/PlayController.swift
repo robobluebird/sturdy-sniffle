@@ -59,6 +59,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var piePan: UIPanGestureRecognizer?
   var panStartPoint = CGPoint()
   var audioWasPlayingWhenPanGestureBegan = false
+  var isPrepared = false
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -104,7 +105,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     textField.autocorrectionType = .no
     textField.autocapitalizationType = .allCharacters
     textField.keyboardType = .default
-    textField.returnKeyType = .done
     textField.clearButtonMode = .whileEditing;
     textField.contentVerticalAlignment = .center
     textField.contentHorizontalAlignment = .center
@@ -115,7 +115,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     let go = InterestingView(frame: CGRect(x: 0, y: 0, width: totalWidth * 0.2, height: totalWidth * 0.2), shape: Shape.ok, color: UIColor.green)
     go.backgroundColor = UIColor.clear
     submitCodeButton.addSubview(go)
-    let submitCodeAction = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleSubmitCodeButtonTap(gestureRecognizer:)))
+    let submitCodeAction = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleSubmitCodeButtonTap))
     submitCodeButton.addGestureRecognizer(submitCodeAction)
     
     codeInput.addSubview(textField)
@@ -324,9 +324,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     playButton.addGestureRecognizer(tg!)
     
-    // audio
-    configureAudioSession()
-    
     // nav
     setNavigationItems()
     
@@ -334,6 +331,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     setActions()
     disableControls()
     configurePieHolder()
+    
+    // audio category
+    try? AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, with: .defaultToSpeaker)
     
     register(registeredCallback: {
       if self.pies.count > 0 {
@@ -351,15 +351,11 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
-    
     UIApplication.shared.beginReceivingRemoteControlEvents()
     self.becomeFirstResponder()
   }
   
   override func viewWillDisappear(_ animated: Bool) {
-    UIApplication.shared.endReceivingRemoteControlEvents()
-    self.resignFirstResponder()
-    
     super.viewWillDisappear(animated)
   }
   
@@ -506,7 +502,11 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       })
     }
     
-    self.navigationController!.present(recorder, animated: true, completion: {})
+    self.navigationController!.present(recorder, animated: true, completion: {
+      if self.audio != nil && self.audio!.isPlaying {
+        self.stopPlaying()
+      }
+    })
   }
   
   func chains() -> [Chain] {
@@ -611,21 +611,11 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     }
   }
   
-  func configureAudioSession() {
-    let session = AVAudioSession.sharedInstance()
-    
-    do {
-      try session.setCategory(AVAudioSessionCategoryPlayback, with: [.defaultToSpeaker, .mixWithOthers])
-      try session.setActive(true)
-    } catch {
-      NSLog("\(error)")
-    }
-  }
-  
   func unloadChain() {
     stopPlaying()
     disableControls()
     self.codeLabel.text = ""
+    isPrepared = false
     
     if currentPieIndex < pies.count {
       pies[currentPieIndex].removeGestureRecognizer(pieTap!)
@@ -705,7 +695,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       do {
         try self.audio = AVAudioPlayer(data: data)
         self.audio!.delegate = self
-        self.audio!.prepareToPlay()
         self.percentDivisor = 360 / self.audio!.duration
         callback()
       } catch {
@@ -717,7 +706,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
           do {
             try self.audio = AVAudioPlayer(data: dataResponse.data!)
             self.audio!.delegate = self
-            self.audio!.prepareToPlay()
             self.percentDivisor = 360 / self.audio!.duration
             self.audioCache[url] = dataResponse.data!
             callback()
@@ -739,7 +727,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     showCodeInput()
   }
   
-  func handleSubmitCodeButtonTap(gestureRecognizer: UITapGestureRecognizer) {
+  func handleSubmitCodeButtonTap() {
     let code = textField.text!
     
     hideBackdrop({
@@ -786,24 +774,35 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func handleSingleSegmentButtonTap(gestureRecognizer: UITapGestureRecognizer) {
     if let sound = soundForCurrentPlayTime() {
-      let url = "https://s3.us-east-2.amazonaws.com/tel-serv/" + sound.url
-      
-      Alamofire.request(url).responseData(completionHandler: { dataResponse in
-        if let data = dataResponse.data {
-          if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-            if let filename = sound.url.components(separatedBy: "/").last {
-              let path = dir.appendingPathComponent(filename)
-              
-              do {
-                try data.write(to: path)
-                let av = UIActivityViewController(activityItems: [path], applicationActivities: nil)
-                self.present(av, animated: true, completion: nil)
-              } catch {
-                NSLog("Error getting data ready to share (single segment): \(error)")
+      hideBackdrop({
+        self.showLoading({
+          let url = "https://s3.us-east-2.amazonaws.com/tel-serv/" + sound.url
+          
+          Alamofire.request(url).responseData(completionHandler: { dataResponse in
+            if let data = dataResponse.data {
+              if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                if let filename = sound.url.components(separatedBy: "/").last {
+                  let path = dir.appendingPathComponent(filename)
+                  
+                  do {
+                    try data.write(to: path)
+                    
+                    let av = UIActivityViewController(activityItems: [path], applicationActivities: nil)
+                    
+                    av.completionWithItemsHandler = { items in
+                      self.hideLoading()
+                    }
+                    
+                    self.present(av, animated: true, completion: nil)
+                  } catch {
+                    NSLog("Error getting data ready to share (single segment): \(error)")
+                  }
+                }
               }
             }
-          }
-        }
+          })
+
+        })
       })
     }
   }
@@ -817,7 +816,13 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
             
             do {
               try data.write(to: path)
+              
               let av = UIActivityViewController(activityItems: [path], applicationActivities: nil)
+              
+              av.completionWithItemsHandler = { items in
+                self.hideBackdrop()
+              }
+              
               self.present(av, animated: true, completion: nil)
             } catch {
               NSLog("Error getting data ready to share (full chain): \(error)")
@@ -908,7 +913,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     showLoading({
       fetchRandomChains(completedCallback: { chains, amount in
         self.hideLoading({
-          self.createPies(chains: chains, callback: nil)
+          self.createPies(chains: chains, callback: {
+            self.scrollToPie(atIndex: 0)
+          })
         })
       }, failedCallback: { status in
         self.hideLoading({
@@ -1133,6 +1140,13 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func startPlaying() {
     if audio != nil {
+      if !isPrepared {
+        audio!.prepareToPlay()
+        isPrepared = true
+      }
+      
+      try? AVAudioSession.sharedInstance().setActive(true)
+      
       playing = true
       setPlayButtonState(to: .playing)
       audio!.play()
@@ -1194,6 +1208,15 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func textFieldShouldReturn(_ textField: UITextField) -> Bool {
     textField.resignFirstResponder();
+    
+    guard let text = textField.text else { return true }
+    
+    if text.characters.count == 4 {
+      handleSubmitCodeButtonTap()
+    } else {
+      self.hideBackdrop()
+    }
+    
     return true;
   }
   

@@ -149,7 +149,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     
     session.requestRecordPermission { result in
       do {
-        try session.setCategory(AVAudioSessionCategoryPlayAndRecord, with: [.defaultToSpeaker, .mixWithOthers])
+        try session.setCategory(AVAudioSessionCategoryPlayAndRecord, with: .defaultToSpeaker)
         try session.setActive(true)
         self.enableRecorder()
       } catch {
