@@ -58,6 +58,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var pieTap: UITapGestureRecognizer?
   var piePan: UIPanGestureRecognizer?
   var panStartPoint = CGPoint()
+  var newCircleButton = UIBarButtonItem()
+  var openLinkButton = UIBarButtonItem()
   var audioWasPlayingWhenPanGestureBegan = false
   var isPrepared = false
   
@@ -407,6 +409,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseOut, animations: {
       self.loadingBackdrop.frame.origin.x = 0
     }, completion: { completed in
+      self.newCircleButton.isEnabled = false
+      self.openLinkButton.isEnabled = false
+      
       if showCompleted != nil {
         showCompleted!()
       }
@@ -417,6 +422,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseOut, animations: {
       self.loadingBackdrop.frame.origin.x = self.loadingBackdrop.frame.origin.x - self.totalWidth
     }, completion: { completed in
+      self.newCircleButton.isEnabled = true
+      self.openLinkButton.isEnabled = true
+      
       if hideCompleted != nil {
         hideCompleted!()
       }
@@ -444,6 +452,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func setNavigationItems() {
     let link = UIButton(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
     let linkLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
+    
     linkLabel.text = "☍"
     link.addSubview(linkLabel)
     link.addTarget(self, action: #selector(PlayController.openLink(sender:)), for: .touchUpInside)
@@ -453,11 +462,11 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     button.layer.cornerRadius = 10
     button.addTarget(self, action: #selector(PlayController.toNewRecording(sender:)), for: .touchUpInside)
     
-    let recordIt = UIBarButtonItem(customView: button)
-    let linkIt = UIBarButtonItem(customView: link)
+    newCircleButton = UIBarButtonItem(customView: button)
+    openLinkButton = UIBarButtonItem(customView: link)
     
-    self.navigationItem.rightBarButtonItem = recordIt
-    self.navigationItem.leftBarButtonItem = linkIt
+    self.navigationItem.rightBarButtonItem = newCircleButton
+    self.navigationItem.leftBarButtonItem = openLinkButton
   }
   
   func configurePieHolder() {
@@ -877,34 +886,12 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func handleReloadTap(gestureRecognizer: UITapGestureRecognizer) {
     showLoading({
-      fetchChain(chain: self.pies[self.currentPieIndex].chain!, completedCallback: { chain in
+      reloadChains(chains: self.chains(), completedCallback: { chains in
         self.hideLoading({
-          var currentChains = self.chains()
-          
-          if let index = currentChains.index(where: { someChain in someChain.id == chain.id }) {
-            currentChains[index] = chain
-            
-            self.hideLoading({
-              self.createPies(chains: currentChains, callback: {
-                self.setPlayProgress(zero: true)
-              })
-            })
-          }
+          self.createPies(chains: chains, callback: nil)
         })
       }, failedCallback: { status in
-        self.hideLoading({
-          if status == 392 {
-            var chains = self.chains()
-            
-            chains.remove(at: self.currentPieIndex)
-            
-            self.createPies(chains: chains, callback: {
-              self.setPlayProgress(zero: true)
-            })
-          } else {
-            handleErrorCode(code: status ?? -1, alertContext: self)
-          }
-        })
+        handleErrorCode(code: status ?? -1, alertContext: self)
       })
     })
   }

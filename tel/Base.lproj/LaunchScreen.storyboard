@@ -21,17 +21,18 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="tel" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0rk-ad-Q8g">
-                                <rect key="frame" x="136" y="274" width="103.5" height="119.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="100"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="circle" translatesAutoresizingMaskIntoConstraints="NO" id="ttq-4q-PDD">
+                                <rect key="frame" x="137" y="283" width="100" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="LHQ-lX-GHc"/>
+                                    <constraint firstAttribute="height" constant="100" id="mjZ-5s-qo8"/>
+                                </constraints>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="0rk-ad-Q8g" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="2OI-8T-3HO"/>
-                            <constraint firstItem="0rk-ad-Q8g" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="HCc-yd-FPw"/>
+                            <constraint firstItem="ttq-4q-PDD" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="9E2-vP-hIk"/>
+                            <constraint firstItem="ttq-4q-PDD" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="Bkw-Sv-gyg"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -40,4 +41,7 @@
             <point key="canvasLocation" x="53" y="375"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="circle" width="186" height="186"/>
+    </resources>
 </document>

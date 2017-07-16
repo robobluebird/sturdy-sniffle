@@ -24,6 +24,14 @@ class Sound: NSObject {
     color = nil
   }
   
+  init(position: Int, duration: Float, color: String) {
+    id = ""
+    url = ""
+    self.duration = duration
+    self.position = position
+    self.color = color
+  }
+  
   init?(json: JSON) {
     id = json["id"].string!
     url = json["url"].string ?? ""

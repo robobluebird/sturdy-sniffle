@@ -10,28 +10,28 @@ import UIKit
 import SwiftyJSON
 
 class Chain: NSObject {
-  var id: String
-  var text: String
+  var id = ""
   var url: String?
-  var duration: Float
-  var code: String
+  var duration = Float(0.0)
+  var code: String = ""
   var sounds = [Sound]()
-  var queuedBuildCount: Int
-  var isStarred: Bool
+  var queuedBuildCount = 0
+  var isStarred = false
   
-  override init() {
-    id = ""
-    text = ""
-    url = ""
-    code = ""
-    duration = 0.0
-    queuedBuildCount = 0
-    isStarred = false
+  init(sounds: [Sound]) {
+    self.sounds = sounds
+    
+    var newDuration = Float(0.0)
+    
+    sounds.forEach({ sound in
+      newDuration += sound.duration
+    })
+    
+    self.duration = newDuration
   }
   
   init?(json: JSON) {
     id = json["id"].stringValue
-    text = json["description"].string ?? ""
     url = json["url"].string ?? ""
     code = json["code"].stringValue
     duration = json["duration"].float ?? 0.0

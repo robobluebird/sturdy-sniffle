@@ -23,7 +23,7 @@ func hideIndicator() {
 }
 
 func constructUrl(_ tail: String) -> String {
-  return "https://sleepy-atoll-82032.herokuapp.com/\(tail)" // "http://localhost:4567/\(tail)"
+  return "http://localhost:4567/\(tail)" // "https://sleepy-atoll-82032.herokuapp.com/\(tail)" //
 }
 
 func urlRequest(urlString: String) -> URLRequest? {

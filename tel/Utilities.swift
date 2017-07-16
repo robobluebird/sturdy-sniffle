@@ -64,7 +64,7 @@ func handleErrorCode(code: Int, alertContext: UIViewController?) {
   case 403:
     message = "you are banned"
   case 422:
-    message = "the submitted sound was too short or too quiet, so we couldn't process it"
+    message = "your sound was too short or too quiet"
   case 437:
     message = "we couldn't load this audio"
   case 500:
