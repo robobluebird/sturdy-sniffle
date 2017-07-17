@@ -287,7 +287,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     outerRecordButton.isHidden = true
     innerRecordButton.backgroundColor = UIColor.red
     recorder!.record()
-    timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(RecordingController.updateRecording), userInfo: nil, repeats: true)
+    timer = Timer.scheduledTimer(timeInterval: 0.05, target: self, selector: #selector(RecordingController.updateRecording), userInfo: nil, repeats: true)
   }
   
   func stopRecording() {
@@ -394,7 +394,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
         self.enableGoButton()
         self.enableClearButton()
         
-        self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(RecordingController.setPlayProgress), userInfo: nil, repeats: true)
+        self.timer = Timer.scheduledTimer(timeInterval: 0.05, target: self, selector: #selector(RecordingController.setPlayProgress), userInfo: nil, repeats: true)
       }
     } catch {
       NSLog("DUMB: \(error)")

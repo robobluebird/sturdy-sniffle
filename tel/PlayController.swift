@@ -19,7 +19,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var rsg: UISwipeGestureRecognizer?
   var pblsg: UISwipeGestureRecognizer?
   var pbrsg: UISwipeGestureRecognizer?
-  var timer: Timer?
+  var audioTimer = Timer()
+  var loadingTimer = Timer()
   var playingRate = 0.0
   var audio: AVAudioPlayer?
   var soundPoints: [Float] = []
@@ -62,6 +63,10 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var openLinkButton = UIBarButtonItem()
   var audioWasPlayingWhenPanGestureBegan = false
   var isPrepared = false
+  var loadingLabel20 = UILabel()
+  var loadingLabel40 = UILabel()
+  var loadingLabel60 = UILabel()
+  var loadingLabel80 = UILabel()
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -78,7 +83,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     nothingHereLabel = UILabel(frame: CGRect(origin: nothingOrigin, size: nothingSize))
     nothingHereLabel.numberOfLines = 0
     nothingHereLabel.text = "NOTHING HERE YET"
-    nothingHereLabel.font = nothingHereLabel.font.withSize(50).italic()
+    nothingHereLabel.font = nothingHereLabel.font.withSize(pieSize / 4).italic()
     nothingHereLabel.adjustsFontSizeToFitWidth = true
     nothingHereLabel.textAlignment = .center
     nothingHereLabel.isHidden = true
@@ -213,18 +218,16 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     // loading
     loadingBackdrop = UIView(frame: CGRect(x: -totalWidth, y: 0, width: totalWidth, height: totalHeight))
     loadingBackdrop.backgroundColor = .clear
+    
     let loadingOrigin = CGPoint(x: 0, y: (totalHeight / 2) - (pieSize / 2))
     let loadingSize = CGSize(width: totalWidth, height: coveringSize)
+    
     loadingScreen = UIView(frame: CGRect(origin: loadingOrigin, size: loadingSize))
     loadingScreen.backgroundColor = .black
-    let loadingLabel = UILabel(frame: CGRect(origin: CGPoint(x: 0, y: 0), size: loadingSize))
-    loadingLabel.textColor = .white
-    loadingLabel.text = "THINKING"
-    loadingLabel.font = loadingLabel.font.withSize(50).italic()
-    loadingLabel.adjustsFontSizeToFitWidth = true
-    loadingLabel.textAlignment = .center
-    loadingScreen.addSubview(loadingLabel)
     loadingBackdrop.addSubview(loadingScreen)
+    
+    createLoadingLabels(coveringSize)
+    
     view.addSubview(loadingBackdrop)
     
     let origin = CGPoint(x: totalWidth / 2 - (pieSize * 0.75) / 2, y: totalHeight / 2 - (pieSize * 0.75) / 2)
@@ -236,7 +239,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     let reloadLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
     reloadLabel.text = "↺"
     reloadLabel.adjustsFontSizeToFitWidth = true
-    reloadLabel.font = reloadLabel.font.withSize(50).italic()
+    reloadLabel.font = reloadLabel.font.withSize(pieSize / 4).italic()
     reloadButton.addSubview(reloadLabel)
     let reloadTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleReloadTap(gestureRecognizer:)))
     reloadButton.addGestureRecognizer(reloadTap)
@@ -247,7 +250,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     let randomizeLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
     randomizeLabel.text = "⚄"
     randomizeLabel.adjustsFontSizeToFitWidth = true
-    randomizeLabel.font = randomizeLabel.font.withSize(50).italic()
+    randomizeLabel.font = randomizeLabel.font.withSize(pieSize / 4).italic()
     randomizeButton.addSubview(randomizeLabel)
     let randomizeTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleRandomizeTap(gestureRecognizer:)))
     randomizeButton.addGestureRecognizer(randomizeTap)
@@ -269,7 +272,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     let downloadLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
     downloadLabel.text = "↓"
     downloadLabel.adjustsFontSizeToFitWidth = true
-    downloadLabel.font = downloadLabel.font.withSize(50).italic()
+    downloadLabel.font = downloadLabel.font.withSize(pieSize / 4).italic()
     downloadButton.addSubview(downloadLabel)
     let downloadTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleDownloadTap(gestureRecognizer:)))
     downloadButton.addGestureRecognizer(downloadTap)
@@ -297,7 +300,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     view.addSubview(codeLabel)
     
     // workingLabel
-    let workingLabelTop = screenCenterY + (pieSize / 2)
+    let workingLabelTop = screenCenterY + pieSize / 2 + (pieSize / 8)
     workingLabel = UILabel(frame: CGRect(x: 0, y: workingLabelTop, width: totalWidth, height: pieSize / 8))
     workingLabel.numberOfLines = 0
     workingLabel.textAlignment = .center
@@ -369,6 +372,51 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     super.didReceiveMemoryWarning()
   }
   
+  func createLoadingLabels(_ coveringSize: CGFloat) {
+    let labelSize = pieSize / 4
+    let yPosition = coveringSize / 2 - labelSize / 2
+    
+    loadingLabel20 = UILabel(frame: CGRect(origin: CGPoint(x: totalWidth * 0.2 - labelSize / 2, y: yPosition), size: CGSize(width: labelSize, height: labelSize)))
+    loadingLabel40 = UILabel(frame: CGRect(origin: CGPoint(x: totalWidth * 0.4 - labelSize / 2, y: yPosition), size: CGSize(width: labelSize, height: labelSize)))
+    loadingLabel60 = UILabel(frame: CGRect(origin: CGPoint(x: totalWidth * 0.6 - labelSize / 2, y: yPosition), size: CGSize(width: labelSize, height: labelSize)))
+    loadingLabel80 = UILabel(frame: CGRect(origin: CGPoint(x: totalWidth * 0.8 - labelSize / 2, y: yPosition), size: CGSize(width: labelSize, height: labelSize)))
+    
+    loadingLabel20.textColor = .red
+    loadingLabel40.textColor = .white
+    loadingLabel60.textColor = .white
+    loadingLabel80.textColor = .white
+    
+    loadingLabel20.textAlignment = .center
+    loadingLabel40.textAlignment = .center
+    loadingLabel60.textAlignment = .center
+    loadingLabel80.textAlignment = .center
+    
+    loadingLabel20.font = loadingLabel20.font.withSize(pieSize / 4).italic()
+    loadingLabel40.font = loadingLabel40.font.withSize(pieSize / 4).italic()
+    loadingLabel60.font = loadingLabel60.font.withSize(pieSize / 4).italic()
+    loadingLabel80.font = loadingLabel80.font.withSize(pieSize / 4).italic()
+    
+    loadingLabel20.numberOfLines = 0
+    loadingLabel40.numberOfLines = 0
+    loadingLabel60.numberOfLines = 0
+    loadingLabel80.numberOfLines = 0
+    
+    loadingLabel20.adjustsFontSizeToFitWidth = true
+    loadingLabel40.adjustsFontSizeToFitWidth = true
+    loadingLabel60.adjustsFontSizeToFitWidth = true
+    loadingLabel80.adjustsFontSizeToFitWidth = true
+    
+    loadingLabel20.text = "w"
+    loadingLabel40.text = "a"
+    loadingLabel60.text = "i"
+    loadingLabel80.text = "t"
+
+    loadingScreen.addSubview(loadingLabel20)
+    loadingScreen.addSubview(loadingLabel40)
+    loadingScreen.addSubview(loadingLabel60)
+    loadingScreen.addSubview(loadingLabel80)
+  }
+  
   func showCodeInput() {
     backdrop.bringSubview(toFront: codeInput)
     showBackdrop()
@@ -406,6 +454,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func showLoading(_ showCompleted: (() -> Void)? = nil) {
     view.bringSubview(toFront: loadingBackdrop)
     
+    self.animateLoadingMessage()
+    
     UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseOut, animations: {
       self.loadingBackdrop.frame.origin.x = 0
     }, completion: { completed in
@@ -418,12 +468,50 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     })
   }
   
+  func animateLoadingMessage() {
+    var ticks = 0
+    
+    loadingTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true, block: { timer in
+      switch ticks % 4 {
+      case 0:
+        self.loadingLabel20.text = "\(ticks / 4 + 1)"
+        self.loadingLabel40.text = ""
+        self.loadingLabel60.text = ""
+        self.loadingLabel80.text = ""
+        break
+      case 1:
+        self.loadingLabel40.text = "2"
+        break
+      case 2:
+        self.loadingLabel60.text = "3"
+        break
+      case 3:
+        self.loadingLabel80.text = "4"
+        break
+      default:
+        self.loadingLabel20.text = "o"
+        self.loadingLabel40.text = "h"
+        self.loadingLabel60.text = "n"
+        self.loadingLabel80.text = "o"
+        break
+      }
+      
+      ticks += 1
+    })
+  }
+  
   func hideLoading(_ hideCompleted: (() -> Void)? = nil) {
     UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseOut, animations: {
       self.loadingBackdrop.frame.origin.x = self.loadingBackdrop.frame.origin.x - self.totalWidth
     }, completion: { completed in
       self.newCircleButton.isEnabled = true
       self.openLinkButton.isEnabled = true
+      
+      self.loadingTimer.invalidate()
+      self.loadingLabel20.text = "w"
+      self.loadingLabel40.text = "a"
+      self.loadingLabel60.text = "i"
+      self.loadingLabel80.text = "t"
       
       if hideCompleted != nil {
         hideCompleted!()
@@ -450,6 +538,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func setNavigationItems() {
+    self.navigationItem.title = "Circles of Sound"
+    
     let link = UIButton(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
     let linkLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
     
@@ -606,7 +696,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-    timer!.invalidate()
+    audioTimer.invalidate()
     playing = false
     setPlayButtonState(to: .stopped)
     setPlayProgress()
@@ -1138,15 +1228,15 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       setPlayButtonState(to: .playing)
       audio!.play()
       audio!.numberOfLoops = -1
-      timer = Timer.scheduledTimer(timeInterval: 0.05, target: self, selector: #selector(PlayController.setPlayProgress), userInfo: nil, repeats: true)
+      audioTimer = Timer.scheduledTimer(timeInterval: 0.05, target: self, selector: #selector(PlayController.setPlayProgress), userInfo: nil, repeats: true)
     }
   }
   
   func stopPlaying() {
-    if audio != nil && timer != nil {
+    if audio != nil{
       playing = false
       setPlayButtonState(to: .paused)
-      timer!.invalidate()
+      audioTimer.invalidate()
       audio!.pause()
     }
   }
