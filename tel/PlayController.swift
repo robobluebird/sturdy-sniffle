@@ -976,6 +976,10 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func handleReloadTap(gestureRecognizer: UITapGestureRecognizer) {
     showLoading({
+      if self.audio != nil && self.audio!.isPlaying {
+        self.stopPlaying()
+      }
+      
       reloadChains(chains: self.chains(), completedCallback: { chains in
         self.hideLoading({
           self.createPies(chains: chains, callback: nil)
@@ -1034,19 +1038,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func handlePieTap(gestureRecognizer: UITapGestureRecognizer) {
     let point = gestureRecognizer.location(in: pies[currentPieIndex])
     let time = pies[currentPieIndex].startTimeForPiePieceCoveringPoint(point: point)
-    var wasPlaying = false
-    
-    if audio!.isPlaying {
-      audio!.pause()
-      wasPlaying = true
-    }
-    
     audio!.currentTime = TimeInterval(time)
     setPlayProgress()
-    
-    if wasPlaying {
-      audio!.play()
-    }
   }
   
   func handlePiePan(gestureRecognizer: UIPanGestureRecognizer) {
@@ -1171,7 +1164,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func enableControls() {
     progress.strokeColor = UIColor.black.cgColor
-    playButton.backgroundColor = .white
+    playButton.isHidden = false
     record.layer.opacity = 1.0
     playButton.layer.opacity = 1.0
     starButton.layer.opacity = 1.0
@@ -1194,7 +1187,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func disableControls(changeOpacity: Bool = false) {
     workingLabel.isHidden = true
     progress.strokeColor = UIColor.clear.cgColor
-    playButton.backgroundColor = .clear
+    playButton.isHidden = true
     
     if changeOpacity {
       record.layer.opacity = 0.5
@@ -1268,19 +1261,41 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
     guard let text = textField.text else { return true }
+    
+    let newString = (textField.text! as NSString).replacingCharacters(in: range, with: string).replacingOccurrences(of: " ", with: "", options: .literal, range: nil).uppercased()
+    
+    if string == " " {
+      return false
+    }
+    
     let newLength = text.characters.count + string.characters.count - range.length
     
     if newLength == 4 {
       submitCodeButton.layer.opacity = 1.0
       submitCodeButton.isUserInteractionEnabled = true
+      
+      return true
     } else {
       if newLength < 4 {
         submitCodeButton.layer.opacity = 0.5
         submitCodeButton.isUserInteractionEnabled = false
+        
+        return true
+      } else if newString.characters.count > 4 {
+        let startIndex = newString.startIndex
+        let endIndex = newString.index(startIndex, offsetBy: 3)
+        let substring = newString[startIndex...endIndex]
+
+        textField.text = substring
+        
+        submitCodeButton.layer.opacity = 1.0
+        submitCodeButton.isUserInteractionEnabled = true
+        
+        return false
+      } else {
+        return false
       }
     }
-    
-    return newLength <= 4
   }
   
   func textFieldShouldReturn(_ textField: UITextField) -> Bool {
