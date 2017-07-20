@@ -53,7 +53,7 @@ func save() -> Bool {
   return false
 }
 
-func handleErrorCode(code: Int, alertContext: UIViewController?) {
+func handleErrorCode(code: Int, alertContext: UIViewController?, extraInfo: String? = nil) {
   var message = ""
   
   switch code {
@@ -70,7 +70,7 @@ func handleErrorCode(code: Int, alertContext: UIViewController?) {
   case 500:
     message = "help! are you connected to the internet?"
   case 681:
-    message = "invalid code"
+    message = "couldn't find a circle with code \(extraInfo!)"
   default:
     message = "so far in the weeds that we might as well give up at this point"
   }

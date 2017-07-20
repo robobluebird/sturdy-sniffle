@@ -9,6 +9,7 @@
 import UIKit
 import AVFoundation
 import Alamofire
+import MediaPlayer
 
 class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate{
   var progress = CAShapeLayer()
@@ -67,6 +68,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var loadingLabel40 = UILabel()
   var loadingLabel60 = UILabel()
   var loadingLabel80 = UILabel()
+  let cosImage = UIImage(named: "circle")!
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -336,9 +338,10 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     setActions()
     disableControls()
     configurePieHolder()
+    setMPCommands()
     
     // audio category
-    try? AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, with: .defaultToSpeaker)
+    try? AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback)
     
     register(registeredCallback: {
       if self.pies.count > 0 {
@@ -750,6 +753,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
           self.setStarState(chain.isStarred)
           self.codeLabel.text = chain.code
           self.enableControls()
+          self.setNowPlayingInfo(duration: self.audio!.duration)
           
           enabledControls = true
         }, failure: {
@@ -845,7 +849,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
               })
             }, failedCallback: { status in
               self.hideLoading({
-                handleErrorCode(code: status ?? -1, alertContext: self)
+                handleErrorCode(code: status ?? -1, alertContext: self, extraInfo: code)
               })
             })
           })
@@ -1220,8 +1224,10 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       playing = true
       setPlayButtonState(to: .playing)
       audio!.play()
-      audio!.numberOfLoops = -1
+      audio!.numberOfLoops = 0
       audioTimer = Timer.scheduledTimer(timeInterval: 0.05, target: self, selector: #selector(PlayController.setPlayProgress), userInfo: nil, repeats: true)
+      
+      setNowPlayingInfo(duration: audio!.duration, elapsedPlayback: audio!.currentTime)
     }
   }
   
@@ -1231,6 +1237,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       setPlayButtonState(to: .paused)
       audioTimer.invalidate()
       audio!.pause()
+      setNowPlayingInfo(duration: audio!.duration, elapsedPlayback: audio!.currentTime)
     }
   }
   
@@ -1331,5 +1338,58 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
         break
       }
     }
+  }
+  
+  func setMPCommands() {
+    let commandCenter = MPRemoteCommandCenter.shared()
+    
+    commandCenter.playCommand.isEnabled = true
+    commandCenter.playCommand.addTarget(handler: { event in
+      if self.audio != nil {
+        self.startPlaying()
+        return .success
+      } else {
+        return .commandFailed
+      }
+    })
+    
+    commandCenter.pauseCommand.addTarget(handler: { event in
+      if self.audio != nil {
+        self.stopPlaying()
+        return .success
+      } else {
+        return .commandFailed
+      }
+    })
+    
+    commandCenter.stopCommand.addTarget(handler: { event in
+      if self.audio != nil {
+        self.stopPlaying()
+        return .success
+      } else {
+        return .commandFailed
+      }
+    })
+    
+    commandCenter.nextTrackCommand.isEnabled = false
+    commandCenter.previousTrackCommand.isEnabled = false
+  }
+  
+  func setNowPlayingInfo(duration: TimeInterval, elapsedPlayback: TimeInterval = 0.0) {
+    let artwork = MPMediaItemArtwork(boundsSize: cosImage.size, requestHandler: { (cgSize: CGSize) -> UIImage in
+      UIGraphicsBeginImageContext(cgSize)
+      self.cosImage.draw(in: CGRect(x: 0, y: 0, width: cgSize.width, height: cgSize.height))
+      let newImage = UIGraphicsGetImageFromCurrentImageContext()
+      UIGraphicsEndImageContext()
+      
+      return newImage!
+    })
+    
+    MPNowPlayingInfoCenter.default().nowPlayingInfo = [
+      MPMediaItemPropertyTitle: "CoS",
+      MPMediaItemPropertyArtwork: artwork,
+      MPMediaItemPropertyPlaybackDuration: duration,
+      MPNowPlayingInfoPropertyElapsedPlaybackTime: elapsedPlayback
+    ]
   }
 }
