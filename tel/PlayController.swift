@@ -12,9 +12,7 @@ import Alamofire
 import MediaPlayer
 
 class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate{
-  var progress = CAShapeLayer()
   var percentDivisor = 0.0
-  var lpgr: UILongPressGestureRecognizer?
   var tg: UITapGestureRecognizer?
   var lsg: UISwipeGestureRecognizer?
   var rsg: UISwipeGestureRecognizer?
@@ -28,6 +26,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var pies: [Pie] = []
   var currentPieIndex = 0
   var playing = false
+  var positionIndicator = UIView()
   var record = UIView()
   var piesHolder = UIView()
   var playButton = UIView()
@@ -37,20 +36,20 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var backdrop = UIView()
   var reloadButton = UIView()
   var randomizeButton = UIView()
-  // var starredButton = UIView()
+  var starredButton = UIView()
+  var tokenButton = UIView()
   var downloadButton = UIView()
   var starButton = UIView()
   var starLabel = UILabel()
   var codeLabel = UILabel()
   var singleSegmentDownloadButton = UIView()
-  var wholeChainDownloadButton = UIView()
+  var wholeCircleDownloadButton = UIView()
   var submitCodeButton = UIView()
   var downloadChooser = UIView()
   var codeInput = UIView()
   var nothingHereLabel = UILabel()
   var workingLabel = UILabel()
   var textField = UITextField()
-  let progressSize = CGFloat(8.0)
   let totalWidth = UIScreen.main.bounds.width
   let totalHeight = UIScreen.main.bounds.height
   let screenCenterX = UIScreen.main.bounds.width / 2
@@ -59,6 +58,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var audioCache = [String: Data]()
   var pieTap: UITapGestureRecognizer?
   var piePan: UIPanGestureRecognizer?
+  var pieLongPress: UILongPressGestureRecognizer?
   var panStartPoint = CGPoint()
   var newCircleButton = UIBarButtonItem()
   var openLinkButton = UIBarButtonItem()
@@ -68,7 +68,21 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   var loadingLabel40 = UILabel()
   var loadingLabel60 = UILabel()
   var loadingLabel80 = UILabel()
+  
   let cosImage = UIImage(named: "circle")!
+  let recordImage = UIImage(named: "recordcircle")
+  let reloadImage = UIImage(named: "reload")
+  let randomImage = UIImage(named: "huh")
+  let downloadImage = UIImage(named: "splitdownloadarrow")
+  let faceImage = UIImage(named: "face")
+  let blackStarImage = UIImage(named: "blackstar")
+  let blackStarSolidImage = UIImage(named: "blackstarsolid")
+  let goldStarImage = UIImage(named: "goldstar")
+  let goldStarSolidImage = UIImage(named: "goldstarsolid")
+  let pencilImage = UIImage(named: "pencil")
+  let smallRecordImage = UIImage(named: "smallrecordcircle")
+  let linkImage = UIImage(named: "link")
+  let underlineImage = UIImage(named: "underline")
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -141,10 +155,10 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     let singleSegmentTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleSingleSegmentButtonTap(gestureRecognizer:)))
     singleSegmentDownloadButton.addGestureRecognizer(singleSegmentTap)
     
-    wholeChainDownloadButton = UIView(frame: CGRect(x: totalWidth * 0.6, y: (coveringSize / 2) - ((totalWidth * 0.2) / 2), width: totalWidth * 0.2, height: totalWidth * 0.2))
+    wholeCircleDownloadButton = UIView(frame: CGRect(x: totalWidth * 0.6, y: (coveringSize / 2) - ((totalWidth * 0.2) / 2), width: totalWidth * 0.2, height: totalWidth * 0.2))
     
-    let wholeChainTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleWholeChainButtonTap(gestureRecognizer:)))
-    wholeChainDownloadButton.addGestureRecognizer(wholeChainTap)
+    let wholeCircleTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleWholeCircleButtonTap(gestureRecognizer:)))
+    wholeCircleDownloadButton.addGestureRecognizer(wholeCircleTap)
     
     var segmentIconLayers = [CAShapeLayer]()
     var wholeIconLayers = [CAShapeLayer]()
@@ -196,23 +210,23 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     }
     
     for layer in wholeIconLayers {
-      wholeChainDownloadButton.layer.addSublayer(layer)
+      wholeCircleDownloadButton.layer.addSublayer(layer)
     }
     
     singleSegmentDownloadButton.backgroundColor = .clear
-    wholeChainDownloadButton.backgroundColor = .clear
+    wholeCircleDownloadButton.backgroundColor = .clear
     
-    let singleSegmentCoverPie = Circle(frame: CGRect(x: totalWidth * 0.2 * 0.075, y: totalWidth * 0.2 * 0.075, width: totalWidth * 0.2 * 0.85, height: totalWidth * 0.2 * 0.85))
+    let singleSegmentCoverPie = CircleView(frame: CGRect(x: totalWidth * 0.2 * 0.075, y: totalWidth * 0.2 * 0.075, width: totalWidth * 0.2 * 0.85, height: totalWidth * 0.2 * 0.85))
     singleSegmentCoverPie.backgroundColor = .black
     singleSegmentDownloadButton.addSubview(singleSegmentCoverPie)
     
     downloadChooser.addSubview(singleSegmentDownloadButton)
     
-    let wholeChainCoverPie = Circle(frame: CGRect(x: totalWidth * 0.2 * 0.075, y: totalWidth * 0.2 * 0.075, width: totalWidth * 0.2 * 0.85, height: totalWidth * 0.2 * 0.85))
-    wholeChainCoverPie.backgroundColor = .black
-    wholeChainDownloadButton.addSubview(wholeChainCoverPie)
+    let wholeCircleCoverPie = CircleView(frame: CGRect(x: totalWidth * 0.2 * 0.075, y: totalWidth * 0.2 * 0.075, width: totalWidth * 0.2 * 0.85, height: totalWidth * 0.2 * 0.85))
+    wholeCircleCoverPie.backgroundColor = .black
+    wholeCircleDownloadButton.addSubview(wholeCircleCoverPie)
     
-    downloadChooser.addSubview(wholeChainDownloadButton)
+    downloadChooser.addSubview(wholeCircleDownloadButton)
     
     // add the whole backdrop + foredrops
     view.addSubview(backdrop)
@@ -234,63 +248,55 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     let origin = CGPoint(x: totalWidth / 2 - (pieSize * 0.75) / 2, y: totalHeight / 2 - (pieSize * 0.75) / 2)
     let size = CGSize(width: pieSize * 0.75, height: pieSize * 0.75)
-    playButton = Circle(frame: CGRect(origin: origin, size: size))
+    playButton = CircleView(frame: CGRect(origin: origin, size: size))
     
     // reload button
-    reloadButton = UIView(frame: CGRect(origin: CGPoint(x: totalWidth * 0.75 - pieSize / 8, y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
-    let reloadLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
-    reloadLabel.text = "↺"
-    reloadLabel.adjustsFontSizeToFitWidth = true
-    reloadLabel.font = reloadLabel.font.withSize(pieSize / 4).italic()
-    reloadButton.addSubview(reloadLabel)
+    reloadButton = UIImageView(image: reloadImage)
+    reloadButton.frame = CGRect(origin: CGPoint(x: totalWidth * 0.2 - pieSize / 8, y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4))
     let reloadTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleReloadTap(gestureRecognizer:)))
     reloadButton.addGestureRecognizer(reloadTap)
     view.addSubview(reloadButton)
     
+    // position indicator
+    let heightDifference = pieSize / 3 - pieSize / 4
+    positionIndicator = UIImageView(image: underlineImage)
+    positionIndicator.frame = CGRect(origin: CGPoint(x: totalWidth * 0.75 - pieSize / 6, y: totalHeight * 0.20 - heightDifference / 4), size: CGSize(width: pieSize / 3, height: pieSize / 3))
+    view.addSubview(positionIndicator)
+    
     // randomize button
-    randomizeButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.5) - (pieSize / 8), y: totalHeight * 0.20), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
-    let randomizeLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
-    randomizeLabel.text = "⚄"
-    randomizeLabel.adjustsFontSizeToFitWidth = true
-    randomizeLabel.font = randomizeLabel.font.withSize(pieSize / 4).italic()
-    randomizeButton.addSubview(randomizeLabel)
+    randomizeButton = UIImageView(image: randomImage)
+    randomizeButton.frame = CGRect(origin: CGPoint(x: (totalWidth * 0.75) - (pieSize / 8), y: totalHeight * 0.20), size: CGSize(width: pieSize / 4, height: pieSize / 4))
     let randomizeTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleRandomizeTap(gestureRecognizer:)))
     randomizeButton.addGestureRecognizer(randomizeTap)
     view.addSubview(randomizeButton)
     
     // starred button
-    //    starredButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.4) - (pieSize / 8), y: totalHeight * 0.20), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
-    //    let starredLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
-    //    starredLabel.text = "☆"
-    //    starredLabel.adjustsFontSizeToFitWidth = true
-    //    starredLabel.font = starredLabel.font.withSize(50)
-    //    starredButton.addSubview(starredLabel)
-    //    let starredTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleStarredTap(gestureRecognizer:)))
-    //    starredButton.addGestureRecognizer(starredTap)
-    //    view.addSubview(starredButton)
+    starredButton = UIImageView(image: blackStarImage)
+    starredButton.frame = CGRect(origin: CGPoint(x: (totalWidth * 0.5) - (pieSize / 8), y: totalHeight * 0.20), size: CGSize(width: pieSize / 4, height: pieSize / 4))
+    let starredTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleStarredTap(gestureRecognizer:)))
+    starredButton.addGestureRecognizer(starredTap)
+    view.addSubview(starredButton)
+    
+    // token button
+    tokenButton = UIImageView(image: faceImage)
+    tokenButton.frame = CGRect(origin: CGPoint(x: (totalWidth * 0.25) - (pieSize / 8), y: totalHeight * 0.20), size: CGSize(width: pieSize / 4, height: pieSize / 4))
+    let tokenTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleTokenTap(gestureRecognizer:)))
+    tokenButton.addGestureRecognizer(tokenTap)
+    view.addSubview(tokenButton)
     
     // download button
-    downloadButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.25) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
-    let downloadLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
-    downloadLabel.text = "↓"
-    downloadLabel.adjustsFontSizeToFitWidth = true
-    downloadLabel.font = downloadLabel.font.withSize(pieSize / 4).italic()
-    downloadButton.addSubview(downloadLabel)
+    downloadButton = UIImageView(image: downloadImage)
+    downloadButton.frame = CGRect(origin: CGPoint(x: (totalWidth * 0.6) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4))
     let downloadTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleDownloadTap(gestureRecognizer:)))
     downloadButton.addGestureRecognizer(downloadTap)
     view.addSubview(downloadButton)
     
-    // star button
-    //    starButton = UIView(frame: CGRect(origin: CGPoint(x: (totalWidth * 0.2) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4)))
-    //    starLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pieSize / 4, height: pieSize / 4))
-    //    starLabel.text = "☆"
-    //    starLabel.textColor = hexStringToUIColor("#FFD700")
-    //    starLabel.adjustsFontSizeToFitWidth = true
-    //    starLabel.font = starLabel.font.withSize(50).italic()
-    //    starButton.addSubview(starLabel)
-    //    let starTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleStarButtonTap(gestureRecognizer:)))
-    //    starButton.addGestureRecognizer(starTap)
-    //    view.addSubview(starButton)
+     // star button
+    starButton = UIImageView(image: goldStarImage)
+    starButton.frame = CGRect(origin: CGPoint(x: (totalWidth * 0.4) - (pieSize / 8), y: totalHeight * 0.75), size: CGSize(width: pieSize / 4, height: pieSize / 4))
+    let starTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleStarButtonTap(gestureRecognizer:)))
+    starButton.addGestureRecognizer(starTap)
+    view.addSubview(starButton)
     
     // codeLabel
     let codeLabelTop = totalHeight * 0.75 + pieSize / 4 * 1.5
@@ -323,6 +329,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     // tap for pie
     pieTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handlePieTap(gestureRecognizer:)))
     
+    // long press for pie
+    pieLongPress = UILongPressGestureRecognizer(target: self, action: #selector(PlayController.handlePieLongPress(gestureRecognizer:)))
+    
     // pie pan
     piePan = UIPanGestureRecognizer(target: self, action: #selector(PlayController.handlePiePan(gestureRecognizer:)))
     
@@ -341,14 +350,15 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     setMPCommands()
     
     // audio category
-    try? AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback)
+    try? AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, with: [.allowBluetooth, .allowAirPlay, .defaultToSpeaker])
     
+    // 
     register(registeredCallback: {
       if self.pies.count > 0 {
-        self.createPies(chains: self.chains(), callback: nil)
+        self.createPies(circles: self.circles(), callback: nil)
       } else {
-        fetchRandomChains(completedCallback: { chains, amount in
-          self.createPies(chains: chains, callback: nil)
+        fetchRandomCircles(completedCallback: { circles, amount in
+          self.createPies(circles: circles, callback: nil)
         }, failedCallback: { status in
           handleErrorCode(code: status ?? -1, alertContext: self)
         });
@@ -455,6 +465,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func showLoading(_ showCompleted: (() -> Void)? = nil) {
+    disableControls()
+    
     view.bringSubview(toFront: loadingBackdrop)
     
     self.animateLoadingMessage()
@@ -462,8 +474,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     UIView.animate(withDuration: 0.25, delay: 0.0, options: .curveEaseOut, animations: {
       self.loadingBackdrop.frame.origin.x = 0
     }, completion: { completed in
-      self.newCircleButton.isEnabled = false
-      self.openLinkButton.isEnabled = false
       
       if showCompleted != nil {
         showCompleted!()
@@ -516,6 +526,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       self.loadingLabel60.text = "i"
       self.loadingLabel80.text = "t"
       
+      self.enableControls()
+      
       if hideCompleted != nil {
         hideCompleted!()
       }
@@ -524,17 +536,13 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func setActions() {
     let actionSize = pieSize / 4
-    let x = totalWidth * 0.5 - pieSize / 8
+    let x = totalWidth * 0.8 - pieSize / 8
     let y = totalHeight * 0.75
     
-    // make the record button
-    record = UIView(frame: CGRect(x: x, y: y, width: actionSize, height: actionSize))
-    record.layer.cornerRadius = actionSize / 2
-    record.backgroundColor = .red
+    record = UIImageView(image: recordImage)
+    record.frame = CGRect(x: x, y: y, width: actionSize, height: actionSize)
     
-    // tap for record button
     let recordTap = UITapGestureRecognizer(target: self, action: #selector(PlayController.handleRecordTap(gestureRecognizer:)))
-    
     record.addGestureRecognizer(recordTap)
     
     view.addSubview(record)
@@ -543,20 +551,16 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   func setNavigationItems() {
     self.navigationItem.title = "Circles of Sound"
     
-    let link = UIButton(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
-    let linkLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
+    let linkButton = UIButton(frame: CGRect(x: 0, y: 0, width: 30, height: 30))
+    linkButton.setImage(linkImage, for: .normal)
+    linkButton.addTarget(self, action: #selector(PlayController.openLink(sender:)), for: .touchUpInside)
     
-    linkLabel.text = "☍"
-    link.addSubview(linkLabel)
-    link.addTarget(self, action: #selector(PlayController.openLink(sender:)), for: .touchUpInside)
+    let recordButton = UIButton(frame: CGRect(x: 0, y: 0, width: 30, height: 30))
+    recordButton.setImage(smallRecordImage, for: .normal)
+    recordButton.addTarget(self, action: #selector(PlayController.toNewRecording(sender:)), for: .touchUpInside)
     
-    let button = UIButton(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
-    button.backgroundColor = UIColor.red
-    button.layer.cornerRadius = 10
-    button.addTarget(self, action: #selector(PlayController.toNewRecording(sender:)), for: .touchUpInside)
-    
-    newCircleButton = UIBarButtonItem(customView: button)
-    openLinkButton = UIBarButtonItem(customView: link)
+    newCircleButton = UIBarButtonItem(customView: recordButton)
+    openLinkButton = UIBarButtonItem(customView: linkButton)
     
     self.navigationItem.rightBarButtonItem = newCircleButton
     self.navigationItem.leftBarButtonItem = openLinkButton
@@ -588,13 +592,13 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     
     recorder.creationCallback = { data in
       self.showLoading({
-        createChain(data: data, completedCallback: { chain in
-          var chains = self.chains()
-          
-          chains.insert(chain, at: self.currentPieIndex)
+        createCircle(data: data, completedCallback: { circles in
+          self.positionIndicator.frame.origin.x = self.totalWidth * 0.25 - self.pieSize / 6
           
           self.hideLoading({
-            self.createPies(chains: chains, callback: {})
+            self.createPies(circles: circles, callback: {
+              self.scrollToPie(atIndex: 0)
+            })
           })
         }, failedCallback: { status in
           self.hideLoading({
@@ -611,19 +615,19 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     })
   }
   
-  func chains() -> [Chain] {
-    return pies.map({ pie in pie.chain! })
+  func circles() -> [Circle] {
+    return pies.map({ pie in pie.circle! })
   }
   
-  func createPies(chains: [Chain], callback: (() -> Void)?) {
+  func createPies(circles: [Circle], callback: (() -> Void)?) {
     var offset = (x: piesHolder.center.x - (pieSize / 2) - (CGFloat(currentPieIndex) * (piesHolder.bounds.width / 2)
       ), y: CGFloat(0.0))
     
     piesHolder.subviews.forEach({ $0.removeFromSuperview() })
     pies.removeAll()
     
-    for c in chains {
-      let p = Pie(chain: c, origin: offset, size: pieSize)
+    for c in circles {
+      let p = Pie(circle: c, origin: offset, size: pieSize)
       
       pies.append(p)
       
@@ -634,7 +638,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     }
     
     renderPies({
-      self.loadChain({
+      self.loadCircle({
         if callback != nil {
           callback!()
         }
@@ -668,34 +672,24 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     }
   }
   
-  func enablePieForChain(chain: Chain) {
-    if let pie = pieForChain(chain: chain) {
+  func enablePieForCircle(circle: Circle) {
+    if let pie = pieForCircle(circle: circle) {
       pie.enable()
     }
   }
   
-  func disablePieForChain(chain: Chain) {
-    if let pie = pieForChain(chain: chain) {
+  func disablePieForCircle(circle: Circle) {
+    if let pie = pieForCircle(circle: circle) {
       pie.disable()
     }
   }
   
-  func pieForChain(chain: Chain) -> Pie? {
-    if let index = pies.index(where: { pie in return pie.chain != nil && pie.chain!.id == chain.id }) {
+  func pieForCircle(circle: Circle) -> Pie? {
+    if let index = pies.index(where: { pie in return pie.circle != nil && pie.circle!.id == circle.id }) {
       return pies[index]
     } else {
       return nil
     }
-  }
-  
-  func updateProgress(degreeAngle: CGFloat) {
-    let radians = (degreeAngle - 90) * (.pi / 180)
-    let newX = screenCenterX + (pieSize / 2 - progressSize) * cos(radians)
-    let newY = screenCenterY + (pieSize / 2 - progressSize) * sin(radians)
-    
-    progress.path = UIBezierPath(arcCenter: CGPoint(x: newX, y: newY), radius: progressSize / 2, startAngle: 0, endAngle: 2 * .pi, clockwise: true).cgPath
-    
-    (progress.sublayers!.first as! CAShapeLayer).path = UIBezierPath(arcCenter: CGPoint(x: newX, y: newY), radius: 3, startAngle: 0, endAngle: 2 * .pi, clockwise: true).cgPath
   }
   
   func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
@@ -713,7 +707,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     }
   }
   
-  func unloadChain() {
+  func unloadCircle() {
     stopPlaying()
     disableControls()
     self.codeLabel.text = ""
@@ -722,11 +716,12 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     if currentPieIndex < pies.count {
       pies[currentPieIndex].removeGestureRecognizer(pieTap!)
       pies[currentPieIndex].removeGestureRecognizer(piePan!)
+      pies[currentPieIndex].removeGestureRecognizer(pieLongPress!)
       pies[currentPieIndex].rotateTo(degreeAngle: 0)
     }
   }
   
-  func loadChain(_ callback: (() -> Void)? = nil) {
+  func loadCircle(_ callback: (() -> Void)? = nil) {
     var enabledControls = false
     
     if pies.count - 1 < currentPieIndex {
@@ -736,22 +731,23 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       return
     }
     
-    if let chain = pies[currentPieIndex].chain {
-      if chain.url == nil || chain.url! == "" {
+    if let circle = pies[currentPieIndex].circle {
+      if circle.url == nil || circle.url! == "" {
         self.disableControls()
-        self.setStarState(chain.isStarred)
-        self.codeLabel.text = chain.code
+        self.setStarState(circle.isStarred)
+        self.codeLabel.text = circle.code
         self.pies[self.currentPieIndex].disable()
       } else {
-        let url = "https://s3.us-east-2.amazonaws.com/tel-serv/" + chain.url!
+        let url = "https://s3.us-east-2.amazonaws.com/tel-serv/" + circle.url!
         
         initAudio(url, callback: {
           self.pies[self.currentPieIndex].addGestureRecognizer(self.pieTap!)
           self.pies[self.currentPieIndex].addGestureRecognizer(self.piePan!)
+          self.pies[self.currentPieIndex].addGestureRecognizer(self.pieLongPress!)
           self.pies[self.currentPieIndex].enable()
           self.setPlayProgress()
-          self.setStarState(chain.isStarred)
-          self.codeLabel.text = chain.code
+          self.setStarState(circle.isStarred)
+          self.codeLabel.text = circle.code
           self.enableControls()
           self.setNowPlayingInfo(duration: self.audio!.duration)
           
@@ -762,8 +758,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
         })
       }
       
-      if chain.queuedBuildCount > 0 {
-        workingLabel.text = "\(chain.queuedBuildCount)"
+      if circle.queuedBuildCount > 0 {
+        workingLabel.text = "\(circle.queuedBuildCount)"
         workingLabel.isHidden = false
       } else {
         workingLabel.text = ""
@@ -787,9 +783,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func setStarState(_ activated: Bool = false) {
     if activated {
-      starLabel.text = "★"
+      (starButton as! UIImageView).image = goldStarSolidImage
     } else {
-      starLabel.text = "☆"
+      (starButton as! UIImageView).image = goldStarImage
     }
   }
   
@@ -839,12 +835,12 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
           self.scrollToPie(atIndex: pieIndex)
         } else {
           self.showLoading({
-            fetchChainByCode(code: code, completedCallback: { chain in
-              var chains = self.chains()
+            fetchCircleByCode(code: code, completedCallback: { circle in
+              var circles = self.circles()
               
-              chains.insert(chain, at: self.currentPieIndex)
+              circles.insert(circle, at: self.currentPieIndex)
               
-              self.createPies(chains: chains, callback: {
+              self.createPies(circles: circles, callback: {
                 self.hideLoading()
               })
             }, failedCallback: { status in
@@ -859,11 +855,11 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func soundForCurrentPlayTime() -> Sound? {
-    if audio != nil && pies[currentPieIndex].chain != nil {
+    if audio != nil && pies[currentPieIndex].circle != nil {
       let time = audio!.currentTime
       var segmentTime = 0.0
       
-      for sound in pies[currentPieIndex].chain!.sounds {
+      for sound in pies[currentPieIndex].circle!.sounds {
         if time >= segmentTime && time < segmentTime + Double(sound.duration) {
           return sound
         } else {
@@ -910,11 +906,11 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     }
   }
   
-  func handleWholeChainButtonTap(gestureRecognizer: UITapGestureRecognizer) {
+  func handleWholeCircleButtonTap(gestureRecognizer: UITapGestureRecognizer) {
     if audio != nil {
       if let data = audio!.data {
         if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-          if let filename = pies[currentPieIndex].chain!.url!.components(separatedBy: "/").last {
+          if let filename = pies[currentPieIndex].circle!.url!.components(separatedBy: "/").last {
             let path = dir.appendingPathComponent(filename)
             
             do {
@@ -928,7 +924,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
               
               self.present(av, animated: true, completion: nil)
             } catch {
-              NSLog("Error getting data ready to share (full chain): \(error)")
+              NSLog("Error getting data ready to share (full circle): \(error)")
             }
           }
         }
@@ -937,7 +933,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func findPieIndexByCode(_ code: String) -> Int? {
-    if let index = chains().index(where: { chain in chain.code == code }) {
+    if let index = circles().index(where: { circle in circle.code == code }) {
       return index
     } else {
       return nil
@@ -949,7 +945,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     let desiredOffset = CGFloat(index) * screenCenterX
     let scrollAmount = currentOffset - desiredOffset
     
-    unloadChain()
+    unloadCircle()
     
     currentPieIndex = index
     
@@ -958,20 +954,12 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
         view.frame.origin.x = view.frame.origin.x + scrollAmount
       }
     }, completion: { success in
-      self.loadChain()
+      self.loadCircle()
     })
   }
   
   func handleBackdropTap(gestureRecognizer: UITapGestureRecognizer) {
     hideBackdrop()
-  }
-  
-  func handleLongPress(gestureRecognizer: UILongPressGestureRecognizer) {
-    if gestureRecognizer.state == .began {
-      startPlaying()
-    } else if gestureRecognizer.state == .ended {
-      stopPlaying()
-    }
   }
   
   func handleTap(gestureRecognizer: UITapGestureRecognizer) {
@@ -984,9 +972,9 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
         self.stopPlaying()
       }
       
-      reloadChains(chains: self.chains(), completedCallback: { chains in
+      reloadCircles(circles: self.circles(), completedCallback: { circles in
         self.hideLoading({
-          self.createPies(chains: chains, callback: nil)
+          self.createPies(circles: circles, callback: nil)
         })
       }, failedCallback: { status in
         handleErrorCode(code: status ?? -1, alertContext: self)
@@ -995,10 +983,12 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func handleRandomizeTap(gestureRecognizer: UITapGestureRecognizer) {
+    positionIndicator.frame.origin.x = totalWidth * 0.75 - pieSize / 6
+    
     showLoading({
-      fetchRandomChains(completedCallback: { chains, amount in
+      fetchRandomCircles(completedCallback: { circles, amount in
         self.hideLoading({
-          self.createPies(chains: chains, callback: {
+          self.createPies(circles: circles, callback: {
             self.scrollToPie(atIndex: 0)
           })
         })
@@ -1011,10 +1001,32 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func handleStarredTap(gestureRecognizer: UITapGestureRecognizer) {
+    positionIndicator.frame.origin.x = totalWidth * 0.5 - pieSize / 6
+    
     showLoading({
-      fetchStarred(completedCallback: { chains in
+      fetchStarred(completedCallback: { circles in
         self.hideLoading({
-          self.createPies(chains: chains, callback: nil)
+          self.createPies(circles: circles, callback: {
+            self.scrollToPie(atIndex: 0)
+          })
+        })
+      }, failedCallback: { status in
+        self.hideLoading({
+          handleErrorCode(code: status ?? -1, alertContext: self)
+        })
+      })
+    })
+  }
+  
+  func handleTokenTap(gestureRecognizer: UITapGestureRecognizer) {
+    positionIndicator.frame.origin.x = totalWidth * 0.25 - pieSize / 6
+    
+    showLoading({
+      fetchCirclesForCurrentToken(completedCallback: { circles in
+        self.hideLoading({
+          self.createPies(circles: circles, callback: {
+            self.scrollToPie(atIndex: 0)
+          })
         })
       }, failedCallback: { status in
         self.hideLoading({
@@ -1029,10 +1041,10 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   }
   
   func handleStarButtonTap(gestureRecognizer: UITapGestureRecognizer) {
-    if pies[currentPieIndex].chain!.url != nil {
-      toggleStarred(chain: pies[currentPieIndex].chain!, completedCallback: { chain in
-        self.pies[self.currentPieIndex].chain = chain
-        self.setStarState(chain.isStarred)
+    if pies[currentPieIndex].circle!.url != nil {
+      toggleStarred(circle: pies[currentPieIndex].circle!, completedCallback: { circle in
+        self.pies[self.currentPieIndex].circle = circle
+        self.setStarState(circle.isStarred)
       }, failedCallback: { status in
         handleErrorCode(code: status ?? -1, alertContext: self)
       })
@@ -1074,22 +1086,70 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     }
   }
   
+  func handlePieLongPress(gestureRecognizer: UILongPressGestureRecognizer) {
+    if gestureRecognizer.state == .began {
+      let point = gestureRecognizer.location(in: pies[currentPieIndex])
+      let sound = pies[currentPieIndex].soundOfPiePieceCoveringPoint(point: point)
+      let circle = pies[currentPieIndex].circle!
+      let currentToken = token()
+      
+      if circle.token == currentToken || sound.token == currentToken {
+        let message = circle.sounds.count == 1 ? "Hide this final sound, and the circle, from everyone forever?" : "Hide this sound from everyone forever?"
+        showOptionsAlert(context: self, message: message, yesHandler: { alert in
+          self.showLoading({
+            hideSound(soundId: sound.id, circleId: circle.id, completedCallback: { circle in
+              if circle == nil {
+                var currentCircles = self.circles()
+                
+                currentCircles.remove(at: self.currentPieIndex)
+                
+                self.hideLoading({
+                  self.createPies(circles: currentCircles, callback: {
+                    self.setPlayProgress(zero: true)
+                  })
+                })
+              } else {
+                var currentCircles = self.circles()
+                
+                if let index = currentCircles.index(where: { someCircle in someCircle.id == circle!.id }) {
+                  currentCircles[index] = circle!
+                  
+                  self.hideLoading({
+                    self.createPies(circles: currentCircles, callback: {
+                      self.setPlayProgress(zero: true)
+                    })
+                  })
+                }
+              }
+            }, failedCallback: { status in
+              self.hideLoading({
+                handleErrorCode(code: status ?? -1, alertContext: self)
+              })
+            })
+          })
+        })
+      } else {
+        showAlert(context: self, message: "You are not the creator of this circle or this sound so you can't hide it from anyone.")
+      }
+    }
+  }
+  
   func handleRecordTap(gestureRecognizer: UITapGestureRecognizer) {
     let recorder: RecordingController = self.storyboard?.instantiateViewController(withIdentifier: "RecordingController") as! RecordingController
     
-    recorder.chain = pies[currentPieIndex].chain
+    recorder.circle = pies[currentPieIndex].circle
     recorder.modalPresentationStyle = .popover
     
-    recorder.additionCallback = { data, chain in
+    recorder.additionCallback = { data, circle in
       self.showLoading({
-        createSound(data: data, chainId: chain.id, completedCallback: { chain in
-          var currentChains = self.chains()
+        createSound(data: data, circleId: circle.id, completedCallback: { circle in
+          var currentCircles = self.circles()
           
-          if let index = currentChains.index(where: { someChain in someChain.id == chain.id }) {
-            currentChains[index] = chain
+          if let index = currentCircles.index(where: { someCircle in someCircle.id == circle.id }) {
+            currentCircles[index] = circle
             
             self.hideLoading({
-              self.createPies(chains: currentChains, callback: {
+              self.createPies(circles: currentCircles, callback: {
                 self.setPlayProgress(zero: true)
               })
             })
@@ -1125,7 +1185,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       }
     }
     
-    self.unloadChain()
+    self.unloadCircle()
     
     if newX != 0.0 {
       currentPieIndex += pieChange
@@ -1135,7 +1195,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
           view.frame.origin.x = view.frame.origin.x + newX
         }
       }, completion: { success in
-        self.loadChain()
+        self.loadCircle()
       })
     } else {
       let bounceValue = gestureRecognizer.direction == .left ? -(pieSize / 4) : pieSize / 4
@@ -1150,7 +1210,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
             view.frame.origin.x = view.frame.origin.x - CGFloat(bounceValue)
           }
         }, completion: { completed in
-          self.loadChain()
+          self.loadCircle()
         })
       })
     }
@@ -1162,50 +1222,46 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       reloadButton.isUserInteractionEnabled = true
     }
     
+    openLinkButton.isEnabled = true
+    newCircleButton.isEnabled = true
     randomizeButton.layer.opacity = 1.0
     randomizeButton.isUserInteractionEnabled = true
+    starredButton.layer.opacity = 1.0
+    starredButton.isUserInteractionEnabled = true
+    tokenButton.layer.opacity = 1.0
+    tokenButton.isUserInteractionEnabled = true
   }
   
   func enableControls() {
-    progress.strokeColor = UIColor.black.cgColor
-    playButton.isHidden = false
-    record.layer.opacity = 1.0
-    playButton.layer.opacity = 1.0
-    starButton.layer.opacity = 1.0
-    reloadButton.layer.opacity = 1.0
-    downloadButton.layer.opacity = 1.0
-    randomizeButton.layer.opacity = 1.0
+    if pies.count > 0 {
+      playButton.isHidden = false
+      playButton.isUserInteractionEnabled = true
+    }
+    
+    openLinkButton.isEnabled = true
+    newCircleButton.isEnabled = true
     record.isUserInteractionEnabled = true
-    playButton.isUserInteractionEnabled = true
     starButton.isUserInteractionEnabled = true
+    tokenButton.isUserInteractionEnabled = true
     reloadButton.isUserInteractionEnabled = true
+    starredButton.isUserInteractionEnabled = true
     downloadButton.isUserInteractionEnabled = true
     randomizeButton.isUserInteractionEnabled = true
-    record.layer.opacity = 1.0
     
-    progress.removeFromSuperlayer()
-    view.layer.addSublayer(progress)
     view.bringSubview(toFront: self.playButton)
   }
   
   func disableControls(changeOpacity: Bool = false) {
-    workingLabel.isHidden = true
-    progress.strokeColor = UIColor.clear.cgColor
     playButton.isHidden = true
-    
-    if changeOpacity {
-      record.layer.opacity = 0.5
-      playButton.layer.opacity = 0.5
-      starButton.layer.opacity = 0.5
-      reloadButton.layer.opacity = 0.5
-      downloadButton.layer.opacity = 0.5
-      randomizeButton.layer.opacity = 0.5
-    }
-    
+    workingLabel.isHidden = true
+    openLinkButton.isEnabled = false
+    newCircleButton.isEnabled = false
     record.isUserInteractionEnabled = false
     playButton.isUserInteractionEnabled = false
     starButton.isUserInteractionEnabled = false
+    tokenButton.isUserInteractionEnabled = false
     reloadButton.isUserInteractionEnabled = false
+    starredButton.isUserInteractionEnabled = false
     downloadButton.isUserInteractionEnabled = false
     randomizeButton.isUserInteractionEnabled = false
     

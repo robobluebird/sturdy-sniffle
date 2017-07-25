@@ -66,38 +66,58 @@ func submitTemporaryToken(token: String, completedCallback: @escaping (String) -
   })
 }
 
-func createChain(data: Data, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  formPost(constructUrl("chains"), data: data, completedCallback: { result in
-    if result["chain"] != JSON.null {
-      completedCallback(Chain(json: result["chain"])!)
+func createCircle(data: Data, completedCallback: @escaping ([Circle]) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  formPost(constructUrl("circles"), data: data, completedCallback: { result in
+    if result["circles"] != JSON.null {
+      if let items = result["circles"].array {
+        var circles = [Circle]()
+        
+        for item in items {
+          circles.append(Circle(json: item)!)
+        }
+        
+        completedCallback(circles)
+      }
+    } else {
+      failedCallback(nil)
     }
   }, failedCallback: { status in
     failedCallback(status)
   })
 }
 
-func createSound(data: Data, chainId: String, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  formPost(constructUrl("chains/\(chainId)/sounds"), data: data, completedCallback: { result in
-    if result["chain"] != JSON.null {
-      completedCallback(Chain(json: result["chain"])!)
+func createSound(data: Data, circleId: String, completedCallback: @escaping (Circle) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  formPost(constructUrl("circles/\(circleId)/sounds"), data: data, completedCallback: { result in
+    if result["circle"] != JSON.null {
+      completedCallback(Circle(json: result["circle"])!)
+    } else {
+      failedCallback(nil)
     }
   }, failedCallback: { status in
     failedCallback(status)
   })
 }
 
-func toggleSound(soundId: String, chainId: String, direction: String, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  post(constructUrl("chains/\(chainId)/sounds/\(soundId)/toggle"), params: nil, completedCallback: { result in
-    if result["chain"] != JSON.null {
-      completedCallback(Chain(json: result["chain"])!)
+func hideSound(soundId: String, circleId: String, completedCallback: @escaping (Circle?) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  post(constructUrl("circles/\(circleId)/sounds/\(soundId)/hide"), params: nil, completedCallback: { result in
+    if result["hidden"] != JSON.null {
+      if result["hidden"].boolValue == true {
+        completedCallback(nil)
+      } else {
+        failedCallback(nil)
+      }
+    } else if result["circle"] != JSON.null {
+      completedCallback(Circle(json: result["circle"])!)
+    } else {
+      failedCallback(nil)
     }
   }, failedCallback: { status in
     failedCallback(status)
   })
 }
 
-func fetchSounds(chainId: String, completedCallback: @escaping ([Sound]) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  get(constructUrl("chains/\(chainId)/sounds"), completedCallback: { result in
+func fetchSounds(circleId: String, completedCallback: @escaping ([Sound]) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  get(constructUrl("circles/\(circleId)/sounds"), completedCallback: { result in
     if let items = result["sounds"].array {
       var sounds = [Sound]()
       
@@ -112,11 +132,11 @@ func fetchSounds(chainId: String, completedCallback: @escaping ([Sound]) -> Void
   })
 }
 
-func fetchChainByCode(code: String, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  get(constructUrl("codes/\(code)/chain"), completedCallback: { result in
-    if result["chain"] != JSON.null {
-      if let chain = Chain(json: result["chain"]) {
-        completedCallback(chain)
+func fetchCircleByCode(code: String, completedCallback: @escaping (Circle) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  get(constructUrl("codes/\(code)/circle"), completedCallback: { result in
+    if result["circle"] != JSON.null {
+      if let circle = Circle(json: result["circle"]) {
+        completedCallback(circle)
       } else {
         failedCallback(500)
       }
@@ -128,11 +148,11 @@ func fetchChainByCode(code: String, completedCallback: @escaping (Chain) -> Void
   })
 }
 
-func fetchChain(chain: Chain, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  get(constructUrl("chains/\(chain.id)"), completedCallback: { result in
-    if result["chain"] != JSON.null {
-      if let reloadedChain = Chain(json: result["chain"]) {
-        completedCallback(reloadedChain)
+func fetchCircle(circle: Circle, completedCallback: @escaping (Circle) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  get(constructUrl("circles/\(circle.id)"), completedCallback: { result in
+    if result["circle"] != JSON.null {
+      if let reloadedCircle = Circle(json: result["circle"]) {
+        completedCallback(reloadedCircle)
       }
     } else {
       failedCallback(392)
@@ -142,11 +162,31 @@ func fetchChain(chain: Chain, completedCallback: @escaping (Chain) -> Void, fail
   })
 }
 
-func toggleStarred(chain: Chain, completedCallback: @escaping (Chain) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  post(constructUrl("starred"), params: ["chain_id": chain.id], completedCallback: { result in
-    if result["chain"] != JSON.null {
-      if let chain = Chain(json: result["chain"]) {
-        completedCallback(chain)
+func fetchCirclesForCurrentToken(completedCallback: @escaping ([Circle]) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  get(constructUrl("created"), completedCallback: { result in
+    if result["circles"] != JSON.null {
+      if let items = result["circles"].array {
+        var circles = [Circle]()
+        
+        for item in items {
+          circles.append(Circle(json: item)!)
+        }
+        
+        completedCallback(circles)
+      }
+    } else {
+      failedCallback(500)
+    }
+  }, failedCallback: { status in
+    failedCallback(status)
+  })
+}
+
+func toggleStarred(circle: Circle, completedCallback: @escaping (Circle) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  post(constructUrl("starred"), params: ["circle_id": circle.id], completedCallback: { result in
+    if result["circle"] != JSON.null {
+      if let circle = Circle(json: result["circle"]) {
+        completedCallback(circle)
       } else {
         failedCallback(500)
       }
@@ -158,16 +198,16 @@ func toggleStarred(chain: Chain, completedCallback: @escaping (Chain) -> Void, f
   })
 }
 
-func fetchStarred(completedCallback: @escaping ([Chain]) -> Void, failedCallback: @escaping (Int?) -> Void) {
+func fetchStarred(completedCallback: @escaping ([Circle]) -> Void, failedCallback: @escaping (Int?) -> Void) {
   get(constructUrl("starred"), completedCallback: { result in
-    if let items = result["chains"].array {
-      var chains = [Chain]()
+    if let items = result["circles"].array {
+      var circles = [Circle]()
       
       for item in items {
-        chains.append(Chain(json: item)!)
+        circles.append(Circle(json: item)!)
       }
       
-      completedCallback(chains)
+      completedCallback(circles)
     }
   }, failedCallback: { status in
     failedCallback(status)
@@ -175,66 +215,66 @@ func fetchStarred(completedCallback: @escaping ([Chain]) -> Void, failedCallback
 }
 
 
-func reloadChains(chains: [Chain], completedCallback: @escaping ([Chain]) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  var url = "chains"
+func reloadCircles(circles: [Circle], completedCallback: @escaping ([Circle]) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  var url = "circles"
   
-  if chains.count > 0 {
-    url.append("?chain_ids[]=")
+  if circles.count > 0 {
+    url.append("?circle_ids[]=")
   }
   
-  let requestedIds = chains.map({ chain in chain.id }).joined(separator: "&chain_ids[]=")
+  let requestedIds = circles.map({ circle in circle.id }).joined(separator: "&circle_ids[]=")
   
   url.append(requestedIds)
   
   get(constructUrl(url), completedCallback: { result in
-    if let items = result["chains"].array {
-      var chains = [Chain]()
+    if let items = result["circles"].array {
+      var circles = [Circle]()
       
       for item in items {
-        chains.append(Chain(json: item)!)
+        circles.append(Circle(json: item)!)
       }
       
-      completedCallback(chains)
+      completedCallback(circles)
     }
   }, failedCallback: { status in
     failedCallback(status)
   })
 }
 
-func fetchChains(_ page: Int?, completedCallback: @escaping ([Chain], Int) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  var action = "chains"
+func fetchCircles(_ page: Int?, completedCallback: @escaping ([Circle], Int) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  var action = "circles"
   
   if page != nil {
     action = action + "?page=\(page!)"
   }
   
   get(constructUrl(action), completedCallback: { result in
-    if let items = result["chains"].array {
-      var chains = [Chain]()
+    if let items = result["circles"].array {
+      var circles = [Circle]()
       let pages = result["pages"].int
       
       for item in items {
-        chains.append(Chain(json: item)!)
+        circles.append(Circle(json: item)!)
       }
       
-      completedCallback(chains, (pages ?? 1))
+      completedCallback(circles, (pages ?? 1))
     }
   }, failedCallback: { status in
     failedCallback(status)
   })
 }
 
-func fetchRandomChains(completedCallback: @escaping ([Chain], Int) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  get(constructUrl("chains/random"), completedCallback: { result in
-    if let items = result["chains"].array {
-      var chains = [Chain]()
+func fetchRandomCircles(completedCallback: @escaping ([Circle], Int) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  get(constructUrl("circles/random"), completedCallback: { result in
+    if let items = result["circles"].array {
+      var circles = [Circle]()
       let pages = result["pages"].int
       
       for item in items {
-        chains.append(Chain(json: item)!)
+        circles.append(Circle(json: item)!)
       }
       
-      completedCallback(chains, (pages ?? 1))
+      completedCallback(circles, (pages ?? 1))
     }
   }, failedCallback: { status in
     failedCallback(status)

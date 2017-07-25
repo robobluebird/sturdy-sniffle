@@ -16,23 +16,23 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   let screenCenterY = UIScreen.main.bounds.height / 2
   let pieSize = UIScreen.main.bounds.width / 2
   
-  var outerRecordButton = Circle()
-  var outerRecordCover = Circle()
-  var innerRecordButton = Circle()
+  var outerRecordButton = CircleView()
+  var outerRecordCover = CircleView()
+  var innerRecordButton = CircleView()
   var coverLayer = CAShapeLayer()
-  var dotsHolder = Circle()
+  var dotsHolder = CircleView()
   var dotSize = CGFloat(0)
   
   var recorder: AVAudioRecorder?
   var player: AVAudioPlayer?
   var timer: Timer?
-  var chain: Chain?
+  var circle: Circle?
   var recording = false
   var someCounter = 30
   var lpgr: UILongPressGestureRecognizer?
   var inactiveColor: UIColor?
   var creationCallback: ((Data) -> Void)?
-  var additionCallback: ((Data, Chain) -> Void)?
+  var additionCallback: ((Data, Circle) -> Void)?
 
   var percentDivisor = 0.0
   
@@ -62,13 +62,13 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     let smallerOrigin = CGPoint(x: screenCenterX - (pieSize * 0.75) / 2, y: screenCenterY - (pieSize * 0.75) / 2)
     let smallerSize = CGSize(width: pieSize * 0.75, height: pieSize * 0.75)
     
-    outerRecordButton = Circle(frame: CGRect(origin: origin, size: size))
+    outerRecordButton = CircleView(frame: CGRect(origin: origin, size: size))
     outerRecordButton.backgroundColor = .red
     
-    outerRecordCover = Circle(frame: CGRect(origin: origin, size: size))
+    outerRecordCover = CircleView(frame: CGRect(origin: origin, size: size))
     outerRecordCover.backgroundColor = .clear
     
-    dotsHolder = Circle(frame: CGRect(origin: origin, size: size))
+    dotsHolder = CircleView(frame: CGRect(origin: origin, size: size))
     dotsHolder.backgroundColor = .clear
   
     for index in 0...19 {
@@ -77,7 +77,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
       let y = (pieSize / 2) + (pieSize / 2 * 0.95 - dotSize) * sin(radians) - (dotSize / 2)
       let origin = CGPoint(x: x, y: y)
       let size = CGSize(width: dotSize, height: dotSize)
-      let circle = Circle(frame: CGRect(origin: origin, size: size))
+      let circle = CircleView(frame: CGRect(origin: origin, size: size))
       circle.backgroundColor = .black
       dotsHolder.addSubview(circle)
     }
@@ -88,7 +88,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     dotsHolder.isHidden = true
     outerRecordCover.layer.addSublayer(coverLayer)
     
-    innerRecordButton = Circle(frame: CGRect(origin: smallerOrigin, size: smallerSize))
+    innerRecordButton = CircleView(frame: CGRect(origin: smallerOrigin, size: smallerSize))
     innerRecordButton.backgroundColor = .white
     inactiveColor = .white
     
@@ -149,7 +149,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     
     session.requestRecordPermission { result in
       do {
-        try session.setCategory(AVAudioSessionCategoryPlayAndRecord)
+        try session.setCategory(AVAudioSessionCategoryPlayAndRecord, with: [.allowBluetooth, .allowAirPlay, .defaultToSpeaker])
         try session.setActive(true)
         self.enableRecorder()
       } catch {
@@ -425,8 +425,8 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     if player != nil {
       if let data = self.player!.data {
         self.dismiss(animated: true, completion: {
-          if self.chain != nil && self.additionCallback != nil {
-            self.additionCallback!(data, self.chain!)
+          if self.circle != nil && self.additionCallback != nil {
+            self.additionCallback!(data, self.circle!)
           } else if self.creationCallback != nil {
             self.creationCallback!(data)
           }

@@ -11,7 +11,7 @@
 		3509829A1DAC43AF00B3C016 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350982991DAC43AF00B3C016 /* Utilities.swift */; };
 		3509829C1DAC43D300B3C016 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3509829B1DAC43D300B3C016 /* Network.swift */; };
 		350B80FB1DB5DCC500D4CA46 /* RecordingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350B80FA1DB5DCC500D4CA46 /* RecordingController.swift */; };
-		350DB41D1EC1FD07008802E7 /* Circle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350DB41C1EC1FD07008802E7 /* Circle.swift */; };
+		350DB41D1EC1FD07008802E7 /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350DB41C1EC1FD07008802E7 /* CircleView.swift */; };
 		351579471EB13FEC0098F4A7 /* PlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351579461EB13FEC0098F4A7 /* PlayController.swift */; };
 		3523F5DE1F1284FF00071DDE /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3523F5DD1F1284FF00071DDE /* Reachability.swift */; };
 		35272B201DAAA18C00F66736 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35272B1F1DAAA18C00F66736 /* AppDelegate.swift */; };
@@ -21,7 +21,7 @@
 		35272B2D1DAAA18C00F66736 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 35272B2B1DAAA18C00F66736 /* LaunchScreen.storyboard */; };
 		35272B381DAAA18C00F66736 /* telTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35272B371DAAA18C00F66736 /* telTests.swift */; };
 		35272B431DAAA18C00F66736 /* telUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35272B421DAAA18C00F66736 /* telUITests.swift */; };
-		352892C71DAC3F47000E1E10 /* Chain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892C61DAC3F47000E1E10 /* Chain.swift */; };
+		352892C71DAC3F47000E1E10 /* Circle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892C61DAC3F47000E1E10 /* Circle.swift */; };
 		352892C91DAC3F50000E1E10 /* Sound.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352892C81DAC3F50000E1E10 /* Sound.swift */; };
 		352B488A1ED45F780013F3CE /* UIFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352B48891ED45F780013F3CE /* UIFont.swift */; };
 		353C7E891DD658F3002E50E7 /* InterestingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353C7E881DD658F3002E50E7 /* InterestingView.swift */; };
@@ -54,7 +54,7 @@
 		350982991DAC43AF00B3C016 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		3509829B1DAC43D300B3C016 /* Network.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
 		350B80FA1DB5DCC500D4CA46 /* RecordingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordingController.swift; sourceTree = "<group>"; };
-		350DB41C1EC1FD07008802E7 /* Circle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Circle.swift; sourceTree = "<group>"; };
+		350DB41C1EC1FD07008802E7 /* CircleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircleView.swift; sourceTree = "<group>"; };
 		351579461EB13FEC0098F4A7 /* PlayController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayController.swift; sourceTree = "<group>"; };
 		3523F5DD1F1284FF00071DDE /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		35272B1C1DAAA18C00F66736 /* tel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tel.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -70,7 +70,7 @@
 		35272B3E1DAAA18C00F66736 /* telUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = telUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		35272B421DAAA18C00F66736 /* telUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = telUITests.swift; sourceTree = "<group>"; };
 		35272B441DAAA18C00F66736 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		352892C61DAC3F47000E1E10 /* Chain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Chain.swift; sourceTree = "<group>"; };
+		352892C61DAC3F47000E1E10 /* Circle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Circle.swift; sourceTree = "<group>"; };
 		352892C81DAC3F50000E1E10 /* Sound.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sound.swift; sourceTree = "<group>"; };
 		352B48891ED45F780013F3CE /* UIFont.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIFont.swift; sourceTree = "<group>"; };
 		353C7E881DD658F3002E50E7 /* InterestingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InterestingView.swift; sourceTree = "<group>"; };
@@ -183,8 +183,8 @@
 			isa = PBXGroup;
 			children = (
 				3574D7B51EB4DA60009C5111 /* Pie.swift */,
-				350DB41C1EC1FD07008802E7 /* Circle.swift */,
-				352892C61DAC3F47000E1E10 /* Chain.swift */,
+				350DB41C1EC1FD07008802E7 /* CircleView.swift */,
+				352892C61DAC3F47000E1E10 /* Circle.swift */,
 				352892C81DAC3F50000E1E10 /* Sound.swift */,
 				353C7E881DD658F3002E50E7 /* InterestingView.swift */,
 				3523F5DD1F1284FF00071DDE /* Reachability.swift */,
@@ -431,9 +431,9 @@
 				35272B281DAAA18C00F66736 /* tel.xcdatamodeld in Sources */,
 				3574D7B81EB63560009C5111 /* PlayButtonStateEnum.swift in Sources */,
 				3523F5DE1F1284FF00071DDE /* Reachability.swift in Sources */,
-				352892C71DAC3F47000E1E10 /* Chain.swift in Sources */,
+				352892C71DAC3F47000E1E10 /* Circle.swift in Sources */,
 				3567E57A1EBF732C0098618C /* ShapeEnum.swift in Sources */,
-				350DB41D1EC1FD07008802E7 /* Circle.swift in Sources */,
+				350DB41D1EC1FD07008802E7 /* CircleView.swift in Sources */,
 				352B488A1ED45F780013F3CE /* UIFont.swift in Sources */,
 				3574D7BE1EB6543E009C5111 /* CGFloat.swift in Sources */,
 				3574D7B61EB4DA60009C5111 /* Pie.swift in Sources */,

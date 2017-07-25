@@ -10,19 +10,12 @@ import UIKit
 import SwiftyJSON
 
 class Sound: NSObject {
-  var id: String
-  var url: String
-  var duration: Float
-  var position: Int
-  var color: String?
-  
-  override init() {
-    id = ""
-    url = ""
-    duration = 0.0
-    position = 0
-    color = nil
-  }
+  var id = ""
+  var url = ""
+  var duration = Float(0.0)
+  var position = -1
+  var color = ""
+  var token = ""
   
   init(position: Int, duration: Float, color: String) {
     id = ""
@@ -37,7 +30,8 @@ class Sound: NSObject {
     url = json["url"].string ?? ""
     duration = json["duration"].float ?? 0.0
     position = json["position"].int ?? 0
-    color = json["color"].string
+    color = json["color"].string ?? ""
+    token = json["token"].string ?? ""
   }
   
   func displayTime() -> String {

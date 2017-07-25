@@ -58,21 +58,21 @@ func handleErrorCode(code: Int, alertContext: UIViewController?, extraInfo: Stri
   
   switch code {
   case 400:
-    message = "we failed. please try again soon"
+    message = "Your request was received, but something broke!"
   case 401:
-    message = "you are not authorized"
+    message = "You are not authorized."
   case 403:
-    message = "you are banned"
+    message = "You are banned."
   case 422:
-    message = "your sound was too short or too quiet"
+    message = "Your sound was too short or too quiet."
   case 437:
-    message = "we couldn't load this audio"
+    message = "We couldn't load the audio...did it disappear?"
   case 500:
-    message = "help! are you connected to the internet?"
+    message = "Your request was received, but something broke!"
   case 681:
-    message = "couldn't find a circle with code \(extraInfo!)"
+    message = "Couldn't find a circle with code: \(extraInfo!)"
   default:
-    message = "so far in the weeds that we might as well give up at this point"
+    message = "The website might be down or you might not be connected to the internet."
   }
   
   if alertContext != nil {
@@ -83,7 +83,21 @@ func handleErrorCode(code: Int, alertContext: UIViewController?, extraInfo: Stri
 func showAlert(context: UIViewController, title: String? = nil, message: String) {
   let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
   
-  let OKAction = UIAlertAction(title: "cool", style: .default)
+  let OKAction = UIAlertAction(title: "OK", style: .default)
+  
+  alertController.addAction(OKAction)
+  
+  context.present(alertController, animated: true)
+}
+
+func showOptionsAlert(context: UIViewController, message: String, yesHandler: @escaping (UIAlertAction) -> Void) {
+  let alertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+  
+  let OKAction = UIAlertAction(title: "Yes", style: .destructive, handler: yesHandler)
+  
+  let cancelAction = UIAlertAction(title: "No", style: .cancel)
+  
+  alertController.addAction(cancelAction)
   
   alertController.addAction(OKAction)
   
