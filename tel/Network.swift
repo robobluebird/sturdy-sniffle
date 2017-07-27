@@ -116,6 +116,22 @@ func hideSound(soundId: String, circleId: String, completedCallback: @escaping (
   })
 }
 
+func hideCircle(circleId: String, completedCallback: @escaping () -> Void, failedCallback: @escaping (Int?) -> Void) {
+  post(constructUrl("circles/\(circleId)/hide"), params: nil, completedCallback: { result in
+    if result["hidden"] != JSON.null {
+      if result["hidden"].boolValue == true {
+        completedCallback()
+      } else {
+        failedCallback(nil)
+      }
+    } else {
+      failedCallback(nil)
+    }
+  }, failedCallback: { status in
+    failedCallback(status)
+  })
+}
+
 func fetchSounds(circleId: String, completedCallback: @escaping ([Sound]) -> Void, failedCallback: @escaping (Int?) -> Void) {
   get(constructUrl("circles/\(circleId)/sounds"), completedCallback: { result in
     if let items = result["sounds"].array {

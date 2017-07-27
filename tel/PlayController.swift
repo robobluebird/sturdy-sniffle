@@ -1042,10 +1042,14 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
   
   func handleStarButtonTap(gestureRecognizer: UITapGestureRecognizer) {
     if pies[currentPieIndex].circle!.url != nil {
+      starButton.isUserInteractionEnabled = false
+      
       toggleStarred(circle: pies[currentPieIndex].circle!, completedCallback: { circle in
         self.pies[self.currentPieIndex].circle = circle
         self.setStarState(circle.isStarred)
+        self.starButton.isUserInteractionEnabled = true
       }, failedCallback: { status in
+        self.starButton.isUserInteractionEnabled = true
         handleErrorCode(code: status ?? -1, alertContext: self)
       })
     }
@@ -1082,54 +1086,6 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
         adjustAudioProgress(by: -(Double(angle / 360) * audio!.duration))
         
         panStartPoint = newPoint
-      }
-    }
-  }
-  
-  func handlePieLongPress(gestureRecognizer: UILongPressGestureRecognizer) {
-    if gestureRecognizer.state == .began {
-      let point = gestureRecognizer.location(in: pies[currentPieIndex])
-      let sound = pies[currentPieIndex].soundOfPiePieceCoveringPoint(point: point)
-      let circle = pies[currentPieIndex].circle!
-      let currentToken = token()
-      
-      if circle.token == currentToken || sound.token == currentToken {
-        let message = circle.sounds.count == 1 ? "Hide this final sound, and the circle, from everyone forever?" : "Hide this sound from everyone forever?"
-        showOptionsAlert(context: self, message: message, yesHandler: { alert in
-          self.showLoading({
-            hideSound(soundId: sound.id, circleId: circle.id, completedCallback: { circle in
-              if circle == nil {
-                var currentCircles = self.circles()
-                
-                currentCircles.remove(at: self.currentPieIndex)
-                
-                self.hideLoading({
-                  self.createPies(circles: currentCircles, callback: {
-                    self.setPlayProgress(zero: true)
-                  })
-                })
-              } else {
-                var currentCircles = self.circles()
-                
-                if let index = currentCircles.index(where: { someCircle in someCircle.id == circle!.id }) {
-                  currentCircles[index] = circle!
-                  
-                  self.hideLoading({
-                    self.createPies(circles: currentCircles, callback: {
-                      self.setPlayProgress(zero: true)
-                    })
-                  })
-                }
-              }
-            }, failedCallback: { status in
-              self.hideLoading({
-                handleErrorCode(code: status ?? -1, alertContext: self)
-              })
-            })
-          })
-        })
-      } else {
-        showAlert(context: self, message: "You are not the creator of this circle or this sound so you can't hide it from anyone.")
       }
     }
   }
@@ -1222,14 +1178,18 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       reloadButton.isUserInteractionEnabled = true
     }
     
+    tokenButton.layer.opacity = 1.0
+    starredButton.layer.opacity = 1.0
+    randomizeButton.layer.opacity = 1.0
+    positionIndicator.layer.opacity = 1.0
+    
+    tokenButton.isUserInteractionEnabled = true
+    starredButton.isUserInteractionEnabled = true
+    randomizeButton.isUserInteractionEnabled = true
+    positionIndicator.isUserInteractionEnabled = true
+    
     openLinkButton.isEnabled = true
     newCircleButton.isEnabled = true
-    randomizeButton.layer.opacity = 1.0
-    randomizeButton.isUserInteractionEnabled = true
-    starredButton.layer.opacity = 1.0
-    starredButton.isUserInteractionEnabled = true
-    tokenButton.layer.opacity = 1.0
-    tokenButton.isUserInteractionEnabled = true
   }
   
   func enableControls() {
@@ -1238,8 +1198,15 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       playButton.isUserInteractionEnabled = true
     }
     
-    openLinkButton.isEnabled = true
-    newCircleButton.isEnabled = true
+    record.layer.opacity = 1.0
+    starButton.layer.opacity = 1.0
+    tokenButton.layer.opacity = 1.0
+    reloadButton.layer.opacity = 1.0
+    starredButton.layer.opacity = 1.0
+    downloadButton.layer.opacity = 1.0
+    randomizeButton.layer.opacity = 1.0
+    positionIndicator.layer.opacity = 1.0
+    
     record.isUserInteractionEnabled = true
     starButton.isUserInteractionEnabled = true
     tokenButton.isUserInteractionEnabled = true
@@ -1247,11 +1214,24 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
     starredButton.isUserInteractionEnabled = true
     downloadButton.isUserInteractionEnabled = true
     randomizeButton.isUserInteractionEnabled = true
+    positionIndicator.isUserInteractionEnabled = true
+    
+    openLinkButton.isEnabled = true
+    newCircleButton.isEnabled = true
     
     view.bringSubview(toFront: self.playButton)
   }
   
   func disableControls(changeOpacity: Bool = false) {
+    record.layer.opacity = 0.5
+    starButton.layer.opacity = 0.5
+    tokenButton.layer.opacity = 0.5
+    reloadButton.layer.opacity = 0.5
+    starredButton.layer.opacity = 0.5
+    downloadButton.layer.opacity = 0.5
+    randomizeButton.layer.opacity = 0.5
+    positionIndicator.layer.opacity = 0.5
+    
     playButton.isHidden = true
     workingLabel.isHidden = true
     openLinkButton.isEnabled = false
@@ -1447,5 +1427,138 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       MPMediaItemPropertyPlaybackDuration: duration,
       MPNowPlayingInfoPropertyElapsedPlaybackTime: elapsedPlayback
     ]
+  }
+  
+  // yes, this handler is too long and too ugly and too non-DRY
+  // i will refactor it later :^)
+  
+  func handlePieLongPress(gestureRecognizer: UILongPressGestureRecognizer) {
+    if gestureRecognizer.state == .began {
+      let point = gestureRecognizer.location(in: pies[currentPieIndex])
+      let sound = pies[currentPieIndex].soundOfPiePieceCoveringPoint(point: point)
+      let circle = pies[currentPieIndex].circle!
+      let currentToken = token()
+      
+      if circle.token == currentToken || sound.token == currentToken {
+        if circle.token == currentToken {
+          if circle.sounds.count == 1 {
+            showOptionsAlert(context: self, message: "Hide this final sound, and the circle, from everyone forever?", yesHandler: { alert in
+              self.showLoading({
+                hideSound(soundId: sound.id, circleId: circle.id, completedCallback: { circle in
+                  if circle == nil {
+                    var currentCircles = self.circles()
+                    
+                    currentCircles.remove(at: self.currentPieIndex)
+                    
+                    self.hideLoading({
+                      self.createPies(circles: currentCircles, callback: {
+                        self.setPlayProgress(zero: true)
+                      })
+                    })
+                  } else {
+                    var currentCircles = self.circles()
+                    
+                    if let index = currentCircles.index(where: { someCircle in someCircle.id == circle!.id }) {
+                      currentCircles[index] = circle!
+                      
+                      self.hideLoading({
+                        self.createPies(circles: currentCircles, callback: {
+                          self.setPlayProgress(zero: true)
+                        })
+                      })
+                    }
+                  }
+                }, failedCallback: { status in
+                  self.hideLoading({
+                    handleErrorCode(code: status ?? -1, alertContext: self)
+                  })
+                })
+              })
+            })
+          } else {
+            showMultiOptionsAlert(context: self, message: "Hide this sound, or hide the whole circle, forever?", handlers: [
+              (title: "Sound", style: .destructive, handler: { alert in
+                self.showLoading({
+                  hideSound(soundId: sound.id, circleId: circle.id, completedCallback: { circle in
+                    var currentCircles = self.circles()
+                    
+                    if let index = currentCircles.index(where: { someCircle in someCircle.id == circle!.id }) {
+                      currentCircles[index] = circle!
+                      
+                      self.hideLoading({
+                        self.createPies(circles: currentCircles, callback: {
+                          self.setPlayProgress(zero: true)
+                        })
+                      })
+                    }
+                  }, failedCallback: { status in
+                    self.hideLoading({
+                      handleErrorCode(code: status ?? -1, alertContext: self)
+                    })
+                  })
+                })
+              }),
+              (title: "Circle", style: .destructive, handler: { alert in
+                self.showLoading({
+                  hideCircle(circleId: circle.id, completedCallback: {
+                    var currentCircles = self.circles()
+                    
+                    currentCircles.remove(at: self.currentPieIndex)
+                    
+                    self.hideLoading({
+                      self.createPies(circles: currentCircles, callback: {
+                        self.setPlayProgress(zero: true)
+                      })
+                    })
+                  }, failedCallback: { status in
+                    self.hideLoading({
+                      handleErrorCode(code: status ?? -1, alertContext: self)
+                    })
+                  })
+                })
+              })
+              ])
+          }
+        } else if sound.token == currentToken {
+          let message = circle.sounds.count == 1 ? "Hide this final sound, and the circle, from everyone forever?" : "Hide this sound from everyone forever?"
+          
+          showOptionsAlert(context: self, message: message, yesHandler: { alert in
+            self.showLoading({
+              hideSound(soundId: sound.id, circleId: circle.id, completedCallback: { circle in
+                if circle == nil {
+                  var currentCircles = self.circles()
+                  
+                  currentCircles.remove(at: self.currentPieIndex)
+                  
+                  self.hideLoading({
+                    self.createPies(circles: currentCircles, callback: {
+                      self.setPlayProgress(zero: true)
+                    })
+                  })
+                } else {
+                  var currentCircles = self.circles()
+                  
+                  if let index = currentCircles.index(where: { someCircle in someCircle.id == circle!.id }) {
+                    currentCircles[index] = circle!
+                    
+                    self.hideLoading({
+                      self.createPies(circles: currentCircles, callback: {
+                        self.setPlayProgress(zero: true)
+                      })
+                    })
+                  }
+                }
+              }, failedCallback: { status in
+                self.hideLoading({
+                  handleErrorCode(code: status ?? -1, alertContext: self)
+                })
+              })
+            })
+          })
+        }
+      } else {
+        showAlert(context: self, message: "You are not the creator of this circle or this sound so you can't hide it from anyone.")
+      }
+    }
   }
 }

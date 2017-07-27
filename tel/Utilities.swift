@@ -90,6 +90,26 @@ func showAlert(context: UIViewController, title: String? = nil, message: String)
   context.present(alertController, animated: true)
 }
 
+func showMultiOptionsAlert(context: UIViewController, message: String, handlers: [(title: String, style: UIAlertActionStyle, handler: ((UIAlertAction) -> Void))]) {
+  let alertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+  
+  var actions = [UIAlertAction]()
+  
+  for tuple in handlers {
+    actions.append(UIAlertAction(title: tuple.title.capitalized, style: tuple.style, handler: tuple.handler))
+  }
+  
+  let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+  
+  alertController.addAction(cancelAction)
+  
+  for action in actions {
+    alertController.addAction(action)
+  }
+  
+  context.present(alertController, animated: true)
+}
+
 func showOptionsAlert(context: UIViewController, message: String, yesHandler: @escaping (UIAlertAction) -> Void) {
   let alertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
   
