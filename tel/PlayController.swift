@@ -612,6 +612,8 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       if self.audio != nil && self.audio!.isPlaying {
         self.stopPlaying()
       }
+      
+      self.hideBackdrop()
     })
   }
   
@@ -1260,7 +1262,7 @@ class PlayController: UIViewController, AVAudioPlayerDelegate, UIGestureRecogniz
       playing = true
       setPlayButtonState(to: .playing)
       audio!.play()
-      audio!.numberOfLoops = 0
+      audio!.numberOfLoops = -1
       audioTimer = Timer.scheduledTimer(timeInterval: 0.05, target: self, selector: #selector(PlayController.setPlayProgress), userInfo: nil, repeats: true)
       
       setNowPlayingInfo(duration: audio!.duration, elapsedPlayback: audio!.currentTime)
