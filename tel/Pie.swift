@@ -8,51 +8,21 @@
 
 import UIKit
 
-class Pie: UIView {
-  var circle: Circle?
+class Pie: CircleView {
+  var circle = Circle()
   var progressLayer = CAShapeLayer()
   var outerDiameter = CGFloat(0.0)
   var innerDiameter = CGFloat(0.0)
   var piePieces = [(sound: Sound?, startTime: Float?, piece: CAShapeLayer, startAngle: CGFloat, endAngle: CGFloat)]()
   var centerX, centerY: CGFloat?
   var enabled = true
-  var processingLabel = UILabel()
-  var starLabel = UILabel()
-  var currentAngle = CGFloat(0)
   
   init(circle: Circle, origin: (x: CGFloat, y: CGFloat), size: CGFloat) {
     let frame = CGRect(x: origin.x, y: origin.y, width: size, height: size)
     
     super.init(frame: frame)
     
-    centerX = bounds.width / 2.0
-    centerY = bounds.height / 2.0
-    outerDiameter = size
-    innerDiameter = size * 0.75
-    
-    backgroundColor = UIColor.white
-    layer.cornerRadius = frame.width / 2
-    
     self.circle = circle
-    
-    processingLabel = UILabel(frame: CGRect(x: 0, y: 0, width: size, height: size))
-    processingLabel.font = processingLabel.font.withSize(50).italic()
-    processingLabel.adjustsFontSizeToFitWidth = true
-    processingLabel.numberOfLines = 0
-    processingLabel.textAlignment = .center
-    processingLabel.text = "please hold..."
-    processingLabel.isHidden = true
-    
-    addSubview(processingLabel)
-    
-    starLabel = UILabel(frame: CGRect(x: outerDiameter * 0.85, y: -(outerDiameter * 0.1), width: outerDiameter * 0.2 , height: outerDiameter * 0.2))
-    starLabel.font = processingLabel.font.withSize(50)
-    starLabel.adjustsFontSizeToFitWidth = true
-    starLabel.numberOfLines = 0
-    starLabel.textAlignment = .center
-    setStarState()
-    
-    // addSubview(starLabel)
     
     pieChartize()
   }
@@ -62,45 +32,30 @@ class Pie: UIView {
   }
   
   override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-    let center = CGPoint(x: bounds.size.width/2, y: bounds.size.height/2)
+    let center = CGPoint(x: bounds.size.width / 2, y: bounds.size.height / 2)
+    
     return pow(center.x-point.x, 2) + pow(center.y - point.y, 2) <= pow(bounds.size.width/2, 2)
   }
   
-  func setStarState() {
-    if circle!.isStarred {
-      starLabel.text = "★"
-    } else {
-      starLabel.text = "☆"
-    }
-  }
-  
-  func rotateTo(degreeAngle: CGFloat) {
-    self.currentAngle = -degreeAngle
-    rotate()
-  }
-  
-  func rotateBy(degreeAngle: CGFloat) {
-    self.currentAngle += degreeAngle
-    rotate()
-  }
-  
-  private func rotate() {
-    self.transform = CGAffineTransform(rotationAngle: self.currentAngle * (.pi / 180))
-  }
-  
-  func coverFrame() -> CGRect {
-    let x = (frame.width - innerDiameter) / 2
-    let y = (frame.height - innerDiameter) / 2
+  func coverFrame(_ override: CGFloat? = nil) -> CGRect {
+    var usableValue = innerDiameter
     
-    return CGRect(x: x, y: y, width: innerDiameter, height: innerDiameter)
+    if override != nil {
+      usableValue = override!
+    }
+    
+    let x = (bounds.width - usableValue) / 2
+    let y = (bounds.height - usableValue) / 2
+    
+    return CGRect(x: x, y: y, width: usableValue, height: usableValue)
   }
   
   func width() -> CGFloat {
-    return frame.size.width
+    return bounds.size.width
   }
   
   func height() -> CGFloat {
-    return frame.size.height
+    return bounds.size.height
   }
   
   func radius() -> CGFloat {
@@ -108,10 +63,23 @@ class Pie: UIView {
   }
 
   func pieChartize() {
+    piePieces.removeAll()
+    
+    for subview in subviews {
+      subview.removeFromSuperview()
+    }
+    
+    layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+    
+    centerX = frame.size.width / 2.0
+    centerY = frame.size.height / 2.0
+    outerDiameter = frame.size.width
+    innerDiameter = frame.size.width * 0.75
+    
     var startAngle = CGFloat(0.0)
     var startTime = Float(0.0)
     
-    if circle == nil || circle!.url == nil || circle!.url == "" || circle!.duration <= 0 {
+    if circle.url == nil || circle.url == "" || circle.duration <= 0 {
       self.layer.opacity = 0.5
       
       let layer = CAShapeLayer()
@@ -130,9 +98,9 @@ class Pie: UIView {
       
       piePieces.append((nil, nil, layer, startAngle, endAngle))
     } else {
-      for sound in circle!.sounds {
+      for sound in circle.sounds {
         let layer = CAShapeLayer()
-        let endAngle = startAngle + CGFloat((sound.duration / circle!.duration) * 360)
+        let endAngle = startAngle + CGFloat((sound.duration / circle.duration) * 360)
         
         let path = UIBezierPath(
           circleSegmentCenter: CGPoint(x: radius(), y: radius()),
@@ -156,19 +124,44 @@ class Pie: UIView {
       layer.addSublayer(p.piece)
     }
     
-    let pieCover = UIView(frame: coverFrame())
-    pieCover.backgroundColor = UIColor.white
-    pieCover.layer.cornerRadius = innerDiameter / 2
-    addSubview(pieCover)
-    bringSubview(toFront: processingLabel)
+    // draw pie cover
+    let coverLayer = CAShapeLayer()
+    
+    let path = UIBezierPath(
+      circleSegmentCenter: CGPoint(x: radius(), y: radius()),
+      radius: radius() * 0.75,
+      startAngle: CGFloat(0),
+      endAngle: CGFloat(360)
+    )
+    
+    coverLayer.path = path.cgPath
+    coverLayer.fillColor = UIColor.white.cgColor
+    coverLayer.strokeColor = UIColor.white.cgColor
+    
+    layer.addSublayer(coverLayer)
+  }
+  
+  func scale(_ scale: CGFloat) {
+    for case let sublayer as CAShapeLayer in layer.sublayers! {
+      sublayer.setAffineTransform(CGAffineTransform(scaleX: scale, y: scale))
+    }
+    
+    centerX = frame.size.width / 2.0
+    centerY = frame.size.height / 2.0
+    outerDiameter = frame.size.width
+    innerDiameter = frame.size.width * 0.75
   }
   
   func soundOfPiePieceCoveringPoint(point: CGPoint) -> Sound {
-    return piePieceForAngle(degreeAngle: angleForPoint(point: point)).sound!
+    let angle = angleForPoint(point: point)
+    
+    return piePieceForAngle(degreeAngle: angle).sound!
   }
   
   func startTimeForPiePieceCoveringPoint(point: CGPoint) -> Float {
-    return piePieceForAngle(degreeAngle: angleForPoint(point: point)).startTime!
+    let angle = angleForPoint(point: point)
+    
+    return piePieceForAngle(degreeAngle: angle).startTime!
   }
   
   func angleForPoint(point: CGPoint) -> CGFloat {
@@ -188,16 +181,13 @@ class Pie: UIView {
   }
   
   func enable() {
-    processingLabel.isHidden = true
     piePieces.forEach({ piece in piece.piece.opacity = 1.0 })
     isUserInteractionEnabled = true
     enabled = true
   }
   
   func disable() {
-    if circle != nil && (circle!.url == nil || circle!.url == "") {
-      bringSubview(toFront: processingLabel)
-      processingLabel.isHidden = false
+    if circle.url == nil || circle.url == "" {
     }
     
     piePieces.forEach({ piece in piece.piece.opacity = 0.5 })
@@ -206,9 +196,7 @@ class Pie: UIView {
   }
   
   func maybeDisable() {
-    if circle != nil && (circle!.url == nil || circle!.url == "") {
-      bringSubview(toFront: processingLabel)
-      processingLabel.isHidden = false
+    if circle.url == nil || circle.url == "" {
       piePieces.forEach({ piece in piece.piece.opacity = 0.5 })
       isUserInteractionEnabled = false
       enabled = false

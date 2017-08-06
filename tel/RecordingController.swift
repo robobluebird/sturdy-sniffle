@@ -14,8 +14,10 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
   let totalHeight = UIScreen.main.bounds.height
   let screenCenterX = UIScreen.main.bounds.width / 2
   let screenCenterY = UIScreen.main.bounds.height / 2
-  let pieSize = UIScreen.main.bounds.width / 2
+  let pieSize = UIScreen.main.bounds.width / 2 * 1.3
+  let instructionImage = UIImage(named: "longpress")
   
+  var instruction = UIImageView()
   var outerRecordButton = CircleView()
   var outerRecordCover = CircleView()
   var innerRecordButton = CircleView()
@@ -51,7 +53,7 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     super.viewDidLoad()
     
     // dotSize
-    dotSize = pieSize / 20
+    dotSize = pieSize / 100
     
     // percentDivisor
     percentDivisor = 360 / recordTime
@@ -71,10 +73,10 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     dotsHolder = CircleView(frame: CGRect(origin: origin, size: size))
     dotsHolder.backgroundColor = .clear
   
-    for index in 0...19 {
-      let radians = (CGFloat(18 * index) / 180) * .pi
-      let x = (pieSize / 2) + (pieSize / 2 * 0.95 - dotSize) * cos(radians) - (dotSize / 2)
-      let y = (pieSize / 2) + (pieSize / 2 * 0.95 - dotSize) * sin(radians) - (dotSize / 2)
+    for index in 0...73 {
+      let radians = (CGFloat(5 * index) / 180) * .pi
+      let x = (pieSize / 2) + (pieSize / 2 * 0.875 - dotSize) * cos(radians) - (dotSize / 2)
+      let y = (pieSize / 2) + (pieSize / 2 * 0.875 - dotSize) * sin(radians) - (dotSize / 2)
       let origin = CGPoint(x: x, y: y)
       let size = CGSize(width: dotSize, height: dotSize)
       let circle = CircleView(frame: CGRect(origin: origin, size: size))
@@ -91,6 +93,11 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     innerRecordButton = CircleView(frame: CGRect(origin: smallerOrigin, size: smallerSize))
     innerRecordButton.backgroundColor = .white
     inactiveColor = .white
+    
+    let instructionSize = pieSize * 0.5
+    instruction = UIImageView(image: instructionImage)
+    instruction.frame = CGRect(x: pieSize * 0.75 / 2 - instructionSize / 2, y: pieSize * 0.75 / 2 - instructionSize / 2, width: instructionSize, height: instructionSize)
+    innerRecordButton.addSubview(instruction)
     
     lpgr = UILongPressGestureRecognizer(target: self, action: #selector(RecordingController.handleRecordButtonLongPress(gestureReconizer:)))
     lpgr!.minimumPressDuration = 0.0
@@ -286,12 +293,14 @@ class RecordingController: UIViewController, AVAudioRecorderDelegate, AVAudioPla
     dotsHolder.isHidden = false
     outerRecordButton.isHidden = true
     innerRecordButton.backgroundColor = UIColor.red
+    instruction.isHidden = true
     recorder!.record()
     timer = Timer.scheduledTimer(timeInterval: 0.05, target: self, selector: #selector(RecordingController.updateRecording), userInfo: nil, repeats: true)
   }
   
   func stopRecording() {
     innerRecordButton.backgroundColor = inactiveColor
+    instruction.isHidden = false
     recordedTime += recorder!.currentTime
     recorder!.stop()
     timer!.invalidate()

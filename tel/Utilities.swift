@@ -59,6 +59,8 @@ func handleErrorCode(code: Int, alertContext: UIViewController?, extraInfo: Stri
   switch code {
   case 400:
     message = "Your request was received, but something broke!"
+    
+    (alertContext as! PlayController).enableReloadButton()
   case 401:
     message = "You are not authorized."
   case 403:
@@ -69,10 +71,14 @@ func handleErrorCode(code: Int, alertContext: UIViewController?, extraInfo: Stri
     message = "We couldn't load the audio...did it disappear?"
   case 500:
     message = "Your request was received, but something broke!"
+    
+    (alertContext as! PlayController).enableReloadButton()
   case 681:
     message = "Couldn't find a circle with code: \(extraInfo!)"
   default:
     message = "The website might be down or you might not be connected to the internet."
+    
+    (alertContext as! PlayController).enableReloadButton()
   }
   
   if alertContext != nil {

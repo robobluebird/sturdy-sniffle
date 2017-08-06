@@ -36,7 +36,7 @@ class CircleView: UIView {
     rotate()
   }
   
-  private func rotate() {
+  func rotate() {
     self.transform = CGAffineTransform(rotationAngle: self.currentAngle * (.pi / 180))
   }
 }

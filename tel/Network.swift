@@ -28,7 +28,7 @@ func constructUrl(_ tail: String) -> String {
 
 func urlRequest(urlString: String) -> URLRequest? {
   if let url = URL(string: urlString) {
-    var request = URLRequest(url: url, cachePolicy: .reloadIgnoringCacheData, timeoutInterval: 10)
+    var request = URLRequest(url: url, cachePolicy: .reloadIgnoringCacheData, timeoutInterval: 20)
     
     if let token = token() {
       request.addValue("TOKEN Token=\(token)", forHTTPHeaderField: "Authorization")
@@ -98,15 +98,9 @@ func createSound(data: Data, circleId: String, completedCallback: @escaping (Cir
   })
 }
 
-func hideSound(soundId: String, circleId: String, completedCallback: @escaping (Circle?) -> Void, failedCallback: @escaping (Int?) -> Void) {
+func hideSound(soundId: String, circleId: String, completedCallback: @escaping (Circle) -> Void, failedCallback: @escaping (Int?) -> Void) {
   post(constructUrl("circles/\(circleId)/sounds/\(soundId)/hide"), params: nil, completedCallback: { result in
-    if result["hidden"] != JSON.null {
-      if result["hidden"].boolValue == true {
-        completedCallback(nil)
-      } else {
-        failedCallback(nil)
-      }
-    } else if result["circle"] != JSON.null {
+    if result["circle"] != JSON.null {
       completedCallback(Circle(json: result["circle"])!)
     } else {
       failedCallback(nil)
@@ -116,14 +110,10 @@ func hideSound(soundId: String, circleId: String, completedCallback: @escaping (
   })
 }
 
-func hideCircle(circleId: String, completedCallback: @escaping () -> Void, failedCallback: @escaping (Int?) -> Void) {
+func hideCircle(circleId: String, completedCallback: @escaping (Circle) -> Void, failedCallback: @escaping (Int?) -> Void) {
   post(constructUrl("circles/\(circleId)/hide"), params: nil, completedCallback: { result in
-    if result["hidden"] != JSON.null {
-      if result["hidden"].boolValue == true {
-        completedCallback()
-      } else {
-        failedCallback(nil)
-      }
+    if result["circle"] != JSON.null {
+      completedCallback(Circle(json: result["circle"])!)
     } else {
       failedCallback(nil)
     }
@@ -231,11 +221,11 @@ func fetchStarred(completedCallback: @escaping ([Circle]) -> Void, failedCallbac
 }
 
 
-func reloadCircles(circles: [Circle], completedCallback: @escaping ([Circle]) -> Void, failedCallback: @escaping (Int?) -> Void) {
-  var url = "circles"
+func reloadCircles(unvisible: Bool = false, circles: [Circle], completedCallback: @escaping ([Circle]) -> Void, failedCallback: @escaping (Int?) -> Void) {
+  var url = "circles?unvisible=\(unvisible)"
   
   if circles.count > 0 {
-    url.append("?circle_ids[]=")
+    url.append("&circle_ids[]=")
   }
   
   let requestedIds = circles.map({ circle in circle.id }).joined(separator: "&circle_ids[]=")

@@ -35,9 +35,9 @@ class InterestingView : UIView {
     context.beginPath()
     
     if shape == Shape.play {
-      context.move(to: CGPoint(x: rect.minX, y: rect.minY))
-      context.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY / 2.0))
-      context.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+      context.move(to: CGPoint(x: rect.maxX * 0.1, y: rect.minY))
+      context.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY * 0.5))
+      context.addLine(to: CGPoint(x: rect.maxX * 0.1, y: rect.maxY))
       context.closePath()
     } else if shape == Shape.download {
       context.move(to: CGPoint(x: rect.maxX * 0.3, y: rect.minY))

@@ -18,6 +18,7 @@ class Circle: NSObject {
   var queuedBuildCount = 0
   var isStarred = false
   var token = ""
+  var visible = false
   
   init(sounds: [Sound]) {
     self.sounds = sounds
@@ -31,6 +32,8 @@ class Circle: NSObject {
     self.duration = newDuration
   }
   
+  override init() {}
+  
   init?(json: JSON) {
     id = json["id"].stringValue
     url = json["url"].string ?? ""
@@ -39,6 +42,7 @@ class Circle: NSObject {
     queuedBuildCount = json["queued_build_count"].int ?? 0
     isStarred = json["starred"].boolValue
     token = json["token"].string ?? ""
+    visible = json["visible"].bool ?? false
     sounds = (json["sounds"].array ?? []).map { item in Sound(json: item)! }
   }
   
